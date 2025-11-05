@@ -174,7 +174,7 @@ export default function TaskFields({
 
       {showCategories && (
         <CollapsibleSection
-          title="Categories (Base fields)"
+          title="Categories"
           defaultOpen
           className="tw:border-b-gray-200 tw:border-b-2"
         >
