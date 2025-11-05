@@ -160,14 +160,14 @@ function App() {
   const handleOpen = () => {
     openTask({
       title: "Create New Task",
-      enabled: ["base", "categories"],
+      enabled: ["base", "categories", "risk"],
       initialData: {
-        aktivitetsnamn: "Ny aktivitet",
-        sannolikhet: 3,
-        påverkan: 2,
-        aktivitetsansvarig: "Oliver",
-        aktivitetsstatus: "Active",
-        prioritet: 100,
+        taskName: "Ny aktivitet",
+        probability: 3,
+        impact: 2,
+        taskManager: "Oliver",
+        taskStatus: "Active",
+        priority: 100,
       },
       titlePath: [
         { name: "Projekt X", onClick: () => console.log("Clicked Projekt X") },

@@ -1,13 +1,15 @@
 import { z } from "zod";
 import { TaskBaseSchema } from "../TaskBase";
 import { TaskCategoriesSchema } from "../TaskCategories";
+import { TaskRiskSchema } from "../TaskRisk";
 
-export type EnabledModule = "base" | "categories";
+export type EnabledModule = "base" | "categories" | "risk";
 
 /** Map module -> its Zod schema */
 type SchemaMap = {
   base: typeof TaskBaseSchema;
   categories: typeof TaskCategoriesSchema;
+  risk: typeof TaskRiskSchema;
 };
 
 /** Make a union into an intersection */
@@ -32,8 +34,8 @@ export function composeSchema<const E extends readonly EnabledModule[]>(
   // Collect only ZodObject parts
   const parts: z.ZodObject[] = [];
   if (enabled.includes("base")) parts.push(TaskBaseSchema as z.ZodObject);
-  if (enabled.includes("categories"))
-    parts.push(TaskCategoriesSchema as z.ZodObject);
+  if (enabled.includes("categories")) parts.push(TaskCategoriesSchema as z.ZodObject);
+  if (enabled.includes("risk")) parts.push(TaskRiskSchema as z.ZodObject);
 
   // Merge objects so the result stays a ZodObject, then make it strict
   const merged =

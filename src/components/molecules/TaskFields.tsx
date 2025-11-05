@@ -9,7 +9,7 @@ import CollapsibleSection from "../atoms/CollapsibleSection";
 import QuillField from "../atoms/QuillField";
 import TaskField from "../atoms/TaskField";
 
-import { AKTIVITETSSTATUS } from "../../schemas/TaskBase"; // icons/options only
+import { TASKSTATUS } from "../../schemas/TaskBase"; // icons/options only
 import { AREA, SECLEVEL } from "../../schemas/TaskCategories"; // icons/options only
 
 import {
@@ -35,6 +35,7 @@ export default function TaskFields({
 }: Props) {
   const showBase = enabled.includes("base");
   const showCategories = enabled.includes("categories");
+  const showRisk = enabled.includes("risk");
 
   // --- helpers that give AUTOCOMPLETE for string keys ---
   type KAll = keyof AllInputs;
@@ -53,7 +54,7 @@ export default function TaskFields({
 
   // Example computed (keys may be absent at runtime if module disabled)
   const riskValue =
-    Number(get("sannolikhet") ?? 0) * Number(get("påverkan") ?? 0) || 0;
+    Number(get("probability") ?? 0) * Number(get("impact") ?? 0) || 0;
 
   return (
     <div className="space-y-4">
@@ -65,79 +66,87 @@ export default function TaskFields({
         >
           <div className="tw:grid tw:grid-cols-[repeat(auto-fit,minmax(22rem,1fr))] tw:gap-0 [&:has(> *:nth-child(2))]:tw:gap-4">
             <TaskField
+              icon={TbFlag3}
               label="Aktivitetsnamn"
               type="text"
-              value={get("aktivitetsnamn")}
-              onChange={(v) => set("aktivitetsnamn", v as string)}
+              value={get("taskName")}
+              onChange={(v) => set("taskName", v as string)}
               placeholder="Namn på aktiviteten"
               disabled={disabled}
-              error={err("aktivitetsnamn")}
+              error={err("taskName")}
             />
             <TaskField
+              icon={AiOutlineUser}
               label="Responsible"
               type="text"
-              value={get("aktivitetsansvarig")}
-              onChange={(v) => set("aktivitetsansvarig", v as string)}
+              value={get("taskManager")}
+              onChange={(v) => set("taskManager", v as string)}
               placeholder="Vem ansvarar?"
               disabled={disabled}
-              error={err("aktivitetsansvarig")}
+              error={err("taskManager")}
             />
           </div>
 
           <div className="tw:grid tw:grid-cols-[repeat(auto-fit,minmax(22rem,1fr))] tw:gap-0 [&:has(> *:nth-child(2))]:tw:gap-4">
             <TaskField
+              icon={FaBullseye}
               label="Status"
               type="select"
-              value={get("aktivitetsstatus") ?? AKTIVITETSSTATUS[0]}
-              onChange={(v) =>
-                set("aktivitetsstatus", v as AllInputs["aktivitetsstatus"])
-              }
+              value={get("taskStatus") ?? TASKSTATUS[0]}
+              onChange={(v) => set("taskStatus", v as AllInputs["taskStatus"])}
               disabled={disabled}
-              options={AKTIVITETSSTATUS.map((s) => ({ value: s, label: s }))}
-              error={err("aktivitetsstatus")}
+              options={TASKSTATUS.map((s) => ({ value: s, label: s }))}
+              error={err("taskStatus")}
             />
             <TaskField
+              icon={TbFlag3}
               label="Priority"
               type="number"
-              value={get("prioritet") as number | undefined}
+              value={get("priority") as number | undefined}
               onChange={(v) =>
-                set("prioritet", (v ?? undefined) as number | undefined)
+                set("priority", (v ?? undefined) as number | undefined)
               }
               step={1}
               disabled={disabled}
-              error={err("prioritet")}
+              error={err("priority")}
             />
           </div>
 
-          <div className="tw:grid tw:grid-cols-[repeat(auto-fit,minmax(22rem,1fr))] tw:gap-0 [&:has(> *:nth-child(2))]:tw:gap-4">
-            <TaskField
-              label="Probability"
-              type="number"
-              value={get("sannolikhet") as number | undefined}
-              onChange={(v) => set("sannolikhet", v as number)}
-              min={1}
-              max={10}
-              step={1}
-              disabled={disabled}
-              error={err("sannolikhet")}
-            />
-            <TaskField
-              label="Impact"
-              type="number"
-              value={get("påverkan") as number | undefined}
-              onChange={(v) => set("påverkan", v as number)}
-              min={1}
-              max={10}
-              step={1}
-              disabled={disabled}
-              error={err("påverkan")}
-            />
-          </div>
-          <div className="py-2">
-            <span className="tw:inline-flex tw:items-center tw:rounded-full tw:px-2.5 tw:py-1 tw:text-sm tw:bg-yellow-50 tw:text-yellow-900">
-              Risk value: {riskValue}
-            </span>
-          </div>
+          {showRisk && (
+            <>
+              <div className="tw:grid tw:grid-cols-[repeat(auto-fit,minmax(22rem,1fr))] tw:gap-0 [&:has(> *:nth-child(2))]:tw:gap-4">
+                <TaskField
+                  icon={TbFlag3}
+                  label="Probability"
+                  type="number"
+                  value={get("probability") as number | undefined}
+                  onChange={(v) => set("probability", v as number)}
+                  min={1}
+                  max={10}
+                  step={1}
+                  disabled={disabled}
+                  error={err("probability")}
+                />
+                <TaskField
+                  icon={TbFlag3}
+                  label="Impact"
+                  type="number"
+                  value={get("impact") as number | undefined}
+                  onChange={(v) => set("impact", v as number)}
+                  min={1}
+                  max={10}
+                  step={1}
+                  disabled={disabled}
+                  error={err("impact")}
+                />
+              </div>
+              {/* <div className="py-2">
+                <span className="tw:inline-flex tw:items-center tw:rounded-full tw:px-2.5 tw:py-1 tw:text-sm tw:bg-yellow-50 tw:text-yellow-900">
+                  Risk value: {riskValue}
+                </span>
+              </div> */}
+            </>
+          )}
         </CollapsibleSection>
       )}
 
@@ -145,30 +154,33 @@ export default function TaskFields({
         <>
           <CollapsibleSection title="Description" defaultOpen>
             <QuillField
-              value={(get("beskrivning") as string | undefined) ?? ""}
-              onChange={(html) => set("beskrivning", html)}
+              value={(get("description") as string | undefined) ?? ""}
+              onChange={(html) => set("description", html)}
               placeholder="Write a description"
               readOnly={disabled}
             />
           </CollapsibleSection>
 
-          <CollapsibleSection title="Konsekvens" defaultOpen>
-            <QuillField
-              value={(get("konsekvens") as string | undefined) ?? ""}
-              onChange={(html) => set("konsekvens", html)}
-              placeholder="Write a consequence…"
-              readOnly={disabled}
-            />
-          </CollapsibleSection>
-
-          <CollapsibleSection title="Grundorsak" defaultOpen>
-            <QuillField
-              value={(get("grundorsak") as string | undefined) ?? ""}
-              onChange={(html) => set("grundorsak", html)}
-              placeholder="Write a reason"
-              readOnly={disabled}
-            />
-          </CollapsibleSection>
+          {showRisk && (
+            <>
+              <CollapsibleSection title="Konsekvens" defaultOpen>
+                <QuillField
+                  value={(get("consequence") as string | undefined) ?? ""}
+                  onChange={(html) => set("consequence", html)}
+                  placeholder="Write a consequence…"
+                  readOnly={disabled}
+                />
+              </CollapsibleSection>
+              <CollapsibleSection title="Grundorsak" defaultOpen>
+                <QuillField
+                  value={(get("rootCause") as string | undefined) ?? ""}
+                  onChange={(html) => set("rootCause", html)}
+                  placeholder="Write a reason"
+                  readOnly={disabled}
+                />
+              </CollapsibleSection>
+            </>
+          )}
         </>
       )}
 
@@ -180,6 +192,7 @@ export default function TaskFields({
         >
           <div className="tw:grid tw:grid-cols-[repeat(auto-fit,minmax(22rem,1fr))] tw:gap-0 [&:has(> *:nth-child(2))]:tw:gap-4">
             <TaskField
+              icon={IoPricetag}
               label="Area"
               type="select"
               value={get("area") as string | undefined}
@@ -189,6 +202,7 @@ export default function TaskFields({
               error={err("area")}
             />
             <TaskField
+              icon={IoPricetag}
               label="Sec Level"
               type="select"
               value={get("seclevel") as string | undefined}
