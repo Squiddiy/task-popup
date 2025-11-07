@@ -16,4 +16,6 @@ export const TaskCategoriesSchema = z.object({
 
 export type TaskCategoriesInput = z.input<typeof TaskCategoriesSchema>;
 export type TaskCategories = z.infer<typeof TaskCategoriesSchema>;
-export type TaskCategoriesErrors = Partial<Record<keyof TaskCategoriesInput, string>>;
+export type TaskCategoriesErrors = Partial<
+  Record<keyof TaskCategoriesInput, string>
+>;

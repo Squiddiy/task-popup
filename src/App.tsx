@@ -2,21 +2,22 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { z } from "zod";
 
-import { TaskBaseSchema } from "./schemas/TaskBase";
 import {
   composeSchema,
   type EnabledModule,
   type InputsFromEnabled,
-} from "./schemas/compose/TaskCompose";
+} from "./composer/TaskCompose";
 
 import { TaskWrapper } from "./components/organism/TaskWrapper";
-import TaskFields from "./components/molecules/TaskFields";
+import { multiColumnLayout } from "./builder/layouts/multiColumnLayout";
+import { oneBigSectionLayout } from "./builder/layouts/oneBigSectionLayout";
 import { BreadcrumbPath } from "./components/atoms/HeaderPath";
 
 import type { PathItem } from "./components/atoms/HeaderPath";
 import type { OnChangeFn } from "./components/organism/TaskWrapper";
 
 import tailwindCss from "./index.css?inline";
+import { TaskBuilder } from "./builder/taskbuilder";
 export function createShadowRootWithTailwind(): {
   rootEl: HTMLElement;
   cleanup: () => void;
@@ -48,11 +49,13 @@ export function createShadowRootWithTailwind(): {
   };
 }
 
+export type TaskType = "Task" | "Risk" | "Gate" | "Milestone";
 function openTask<
   const E extends readonly EnabledModule[] = readonly ["base"],
   const S extends z.ZodTypeAny | undefined = undefined
 >(opts: {
   title?: string;
+  taskType?: TaskType
   enabled?: E;
   initialData?: Partial<
     S extends z.ZodTypeAny ? z.input<S> : InputsFromEnabled<E>
@@ -76,6 +79,7 @@ function openTask<
 > {
   const {
     title = "",
+    taskType = "Task",
     enabled, // ✅ default only base
     initialData,
     render,
@@ -94,7 +98,7 @@ function openTask<
     onChange,
     errors,
   }: {
-    values: S extends z.ZodTypeAny ? z.input<S> : InputsFromEnabled<E>;
+    values: any;
     onChange: OnChangeFn<
       S extends z.ZodTypeAny ? z.input<S> : InputsFromEnabled<E>
     >;
@@ -105,13 +109,17 @@ function openTask<
         string
       >
     >;
-  }) =>
-    React.createElement(TaskFields as any, {
-      value: values,
-      onChange,
-      errors,
-      enabled,
-    });
+  }) => (
+    <TaskBuilder
+      schema={Schema} // the composed schema you already built
+      layout={multiColumnLayout} // pick any layout you want
+      values={values}
+      onChange={(patch) => onChange(patch, true)} // adapt to your OnChangeFn<T>
+      errors={errors}
+      disabled={false}
+      // registry={customRegistry} // optional, if you have one
+    />
+  );
 
   return new Promise((resolve) => {
     const { rootEl, cleanup } = createShadowRootWithTailwind();
@@ -144,6 +152,7 @@ function openTask<
     root.render(
       <TaskWrapper<TValues>
         title={title}
+        taskType={taskType}
         pathNode={pathNode as any}
         container={rootEl}
         schema={Schema as z.ZodType<TValues>}
@@ -160,14 +169,19 @@ function App() {
   const handleOpen = () => {
     openTask({
       title: "Create New Task",
-      enabled: ["base", "categories", "risk"],
+      taskType: "Task",
+      enabled: ["categories","base","risk"],
       initialData: {
-        taskName: "Ny aktivitet",
-        probability: 3,
-        impact: 2,
-        taskManager: "Oliver",
-        taskStatus: "Active",
-        priority: 100,
+        area: "Cool Area",
+        seclevel: "High",
+        
+        // taskName: "Ny aktivitet",
+        // probability: 3,
+        // impact: 2,
+        // taskManager: "Oliver",
+        // taskStatus: "Active",
+        // priority: 100,
+        
       },
       titlePath: [
         { name: "Projekt X", onClick: () => console.log("Clicked Projekt X") },

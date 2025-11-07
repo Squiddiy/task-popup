@@ -3,6 +3,7 @@ import { z } from "zod";
 import Popup from "./Popup";
 import ConfirmButtonSet from "../molecules/ConfirmButtonSet";
 import { FaExclamationTriangle } from "react-icons/fa";
+import type { TaskType } from "../../App";
 
 export type OnChangeFn<T> = (
   patch: Partial<T> | ((prev: T) => Partial<T>),
@@ -27,6 +28,7 @@ type WrapperProps<T> = {
   container: HTMLElement;
   pathNode: React.ReactNode;
   title: string;
+  taskType: TaskType;
 
   schema: z.ZodType<T>;
 
@@ -44,18 +46,17 @@ export function TaskWrapper<T>({
   onCancel,
   schema,
   title,
+  taskType,
   container,
   pathNode,
   render,
 }: WrapperProps<T>) {
-
-  
   const [data, setData] = React.useState<T>(initialData);
   const [isValid, setIsValid] = React.useState(true);
   const [errors, setErrors] = React.useState<Partial<Record<keyof T, string>>>(
     {}
   );
-  
+
   const validateAll = (formData: T) => {
     const result = schema.safeParse(formData);
     console.log(result);
@@ -99,27 +100,13 @@ export function TaskWrapper<T>({
     >
       <Popup.Body>
         <div>
-          {React.createElement(
-            FaExclamationTriangle as React.ComponentType<any>,
-            {
-              size: 40,
-              style: {
-                display: "inline-block",
-                verticalAlign: "text-bottom",
-                marginRight: "4px",
-                color: "#374151",
-              },
-            }
+          {taskType === "Risk" && (
+            <FaExclamationTriangle
+              size={40}
+              className="tw:inline-block tw:align-text-bottom tw:mr-4"
+            ></FaExclamationTriangle>
           )}
-          <h1
-            style={{
-              display: "inline-block",
-              fontSize: "x-large",
-              fontWeight: "bolder",
-            }}
-          >
-            {title}
-          </h1>
+          <h1 className="tw:inline-block tw:text-xl tw:font-bold">{title}</h1>
         </div>
 
         {render({

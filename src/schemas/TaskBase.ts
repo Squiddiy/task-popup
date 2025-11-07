@@ -1,12 +1,12 @@
 import { z } from "zod";
 
-export const TASKSTATUS = ["Active", "Not Active"] as const; 
+export const TASKSTATUS = ["Active", "Not Active"] as const;
 
 export const TaskBaseSchema = z.object({
   taskName: z.string().min(1, "Krävs"),
   taskManager: z.string().min(1, "Krävs"),
-  taskStatus: z.enum(TASKSTATUS),
-  description: z.string().optional().default(""),
+  taskStatus: z.enum(TASKSTATUS).default("Active"),
+  description: z.string().default(""),
   priority: z.number().int().optional(),
 });
 
