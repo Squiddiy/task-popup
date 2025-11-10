@@ -27,24 +27,8 @@ export default function CollapsibleSection({
             {title}
           </span>
           {open
-            ? React.createElement(FaChevronDown as React.ComponentType<any>, {
-                size: 8,
-                style: {
-                  paddingLeft: "2px",
-                  display: "inline-block",
-                  verticalAlign: "middle",
-                  color: "#6B7280",
-                },
-              })
-            : React.createElement(FaChevronRight as React.ComponentType<any>, {
-                size: 6,
-                style: {
-                  paddingLeft: "2px",
-                  display: "inline-block",
-                  verticalAlign: "middle",
-                  color: "#6B7280",
-                },
-              })}
+            ? <FaChevronDown className="tw:pl-2 tw:inline-block tw:align-middle tw:text-gray-900"></FaChevronDown> 
+            : <FaChevronRight className="tw:pl-3 tw:inline-block tw:align-middle tw:text-gray-900"></FaChevronRight> }
         </button>
       </div>
       {open && <div className="px-4 pb-3">{children}</div>}
