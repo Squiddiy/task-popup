@@ -9,18 +9,15 @@ import { TaskRiskMeta } from "../schemas/schemaMetas/TaskRisk.meta";
 import { TaskSwitchMeta } from "../schemas/schemaMetas/TaskSwitch.meta";
 import { TaskSwitchSchema } from "../schemas/TaskSwitch";
 
-/** Single source of truth: each module can have { schema, meta? } */
 export const MODULES = {
   base:        { schema: TaskBaseSchema,        meta: TaskBaseMeta },
   categories:  { schema: TaskCategoriesSchema,  meta: TaskCategoriesMeta },
   risk:        { schema: TaskRiskSchema,        meta: TaskRiskMeta },
   switch:     { schema: TaskSwitchSchema,      meta: TaskSwitchMeta },
-  // budget:   { schema: TaskBudgetSchema,      meta: TaskBudgetMeta },
 } as const;
 
 export type EnabledModule = keyof typeof MODULES;
 
-// ---- Types you already use ----
 type SchemaMap = { [K in EnabledModule]: typeof MODULES[K]["schema"] };
 type InputOf<M extends EnabledModule> = z.input<SchemaMap[M]>;
 type UnionToIntersection<U> =

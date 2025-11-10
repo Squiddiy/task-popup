@@ -9,14 +9,14 @@ export const oneBigSectionLayout: LayoutConfig<AllInputs> = {
       collapsible: true,
       defaultOpen: true,
       rows: [
-        { cols: "auto", fields: [{ key: "taskName" }, { key: "taskManager" }] },
-        { cols: "auto", fields: [{ key: "taskStatus" }, { key: "priority" }] },
+        { cols: 1, fields: [{ key: "taskName" }, { key: "taskManager" }] },
+        { cols: 1, fields: [{ key: "taskStatus" }, { key: "priority" }] },
         {
           cols: 1,
           fields: [{ key: "description", override: { kind: "richtext" } }],
         },
         {
-          cols: "auto",
+          cols: 1,
           visibleIf: ({ values }) =>
             values.probability != null || values.impact != null,
           fields: [
@@ -32,7 +32,7 @@ export const oneBigSectionLayout: LayoutConfig<AllInputs> = {
           ],
         },
         {
-          cols: "auto",
+          cols: 1,
           fields: [{ key: "area" }, { key: "seclevel" }],
         },
       ],

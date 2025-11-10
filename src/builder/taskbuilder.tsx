@@ -61,38 +61,42 @@ export function TaskBuilder<T>({
     );
   }
 
+
+
   return (
-    <div className="space-y-4">
+    <div>
       {layout.sections.map((sec) => {
         if (!sectionHasAnyVisibleField(sec)) return null;
         if (sec.visibleIf && !sec.visibleIf({ values })) return null;
 
+        const maxCols =  Math.max(...sec.rows.map((r) => r.cols ?? 1));
+        const childrenClassName = `tw:grid tw:grid-cols-${maxCols}`;
         return (
           <CollapsibleSection
             key={sec.id}
             title={sec.title}
             defaultOpen={sec.defaultOpen ?? true}
             className="tw:border-b-gray-200 tw:border-b-2"
+            childrenClassName={childrenClassName}
           >
             {sec.rows.map((row, ri) => {
               if (row.visibleIf && !row.visibleIf({ values })) return null;
 
+              const cols = row.cols ?? 1;
               const grid =
-                row.cols === 1
-                  ? "tw:grid-cols-1"
-                  : row.cols === "auto"
-                  ? "tw:grid-cols-[repeat(auto-fit,minmax(22rem,1fr))]"
-                  : `tw:grid-cols-${row.cols}`;
+                cols === 1
+                  ? `tw:col-span-${maxCols}`
+                  : `tw:space-y-${row.cols}`;
 
               return (
-                <div key={ri} className={`tw:grid ${grid} tw:gap-4`}>
+                <div key={ri} className={grid}>
                   {row.fields.map((f) => {
                     const key = f.key as string;
                     const s = shape[key];
                     if (!s) return null; // field not in schema → skip
 
                     // Pull meta from composed map, then let overrides win
-                    const mm = metaMap[key] ?? {} as FieldMeta;
+                    const mm = metaMap[key] ?? ({} as FieldMeta);
                     const label = f.override?.label ?? mm.label ?? key;
                     const icon = f.override?.icon ?? mm.icon; // string token | string | IconType; registry resolves
                     const kind = f.override?.kind ?? mm.kind ?? "text";
@@ -110,7 +114,8 @@ export function TaskBuilder<T>({
                     if (!renderer) return null;
 
                     // Computed fields become read-only (no onChange)
-                    const value = f.compute?.({ values }) ?? (get(f.key) as any);
+                    const value =
+                      f.compute?.({ values }) ?? (get(f.key) as any);
 
                     return (
                       <React.Fragment key={String(f.key)}>

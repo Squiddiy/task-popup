@@ -21,30 +21,19 @@ type CommonProps = {
 
 type Props =
   | ({
-      type: "text" | "number";
-      options?: never;
-    } & CommonProps)
+    type: "text" | "number";
+    options?: never;
+  } & CommonProps)
   | ({
-      type: "select";
-      options: Option[];
-    } & CommonProps);
+    type: "select";
+    options: Option[];
+  } & CommonProps);
+
 
 export default function TaskField(props: Props) {
   const {
-    id,
-    icon: Icon,
-    label,
-    value,
-    onChange,
-    type,
-    options,
-    min,
-    max,
-    step,
-    placeholder,
-    disabled,
-    error,
-    readOnly,
+    id, icon: Icon, label, value, onChange, type, options,
+    min, max, step, placeholder, disabled, error, readOnly,
   } = props;
 
   const baseInput =
@@ -61,10 +50,7 @@ export default function TaskField(props: Props) {
             htmlFor={id}
             className="tw:flex tw:items-center tw:gap-2 tw:min-w-28 tw:whitespace-nowrap tw:text-gray-700"
           >
-            {Icon &&
-              React.createElement(Icon as React.ComponentType<any>, {
-                size: 18,
-              })}
+            {Icon && React.createElement(Icon as React.ComponentType<any>, { size: 18 })}
             <span className="tw:font-medium">{label}</span>
           </label>
 
@@ -76,18 +62,10 @@ export default function TaskField(props: Props) {
               disabled={disabled}
               className={`${baseInput} ${numberAlign} tw:appearance-none tw:min-w-[8rem] tw:flex-1 tw:border-b tw:border-gray-200 focus:tw:border-gray-400`}
             >
-              {options!.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
+              {options!.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           ) : readOnly ? (
-            <span
-              className={`${numberAlign} tw:min-w-[8rem] tw:flex-1 tw:font-medium`}
-            >
-              {value}
-            </span>
+            <span className={`${numberAlign} tw:min-w-[8rem] tw:flex-1 tw:font-medium`}>{value}</span>
           ) : (
             <input
               id={id}
@@ -99,11 +77,7 @@ export default function TaskField(props: Props) {
                   onChange(raw === "" ? "" : Number(raw));
                 } else onChange(e.target.value);
               }}
-              min={min}
-              max={max}
-              step={step}
-              placeholder={placeholder}
-              disabled={disabled}
+              min={min} max={max} step={step} placeholder={placeholder} disabled={disabled}
               className={`${baseInput} ${numberAlign} tw:min-w-[8rem] tw:flex-1 tw:border-b tw:border-gray-200 focus:tw:border-gray-400`}
             />
           )}
@@ -112,9 +86,7 @@ export default function TaskField(props: Props) {
         {/* Right-aligned trailing number */}
       </div>
 
-      {error && (
-        <div className="tw:mt-1 tw:text-xs tw:text-rose-600">{error}</div>
-      )}
+      {error && <div className="tw:mt-1 tw:text-xs tw:text-rose-600">{error}</div>}
     </div>
   );
 }

@@ -19,7 +19,7 @@ function resolveIcon(icon?: string | IconType): IconType | undefined {
 export type RendererProps<T, K extends keyof T> = {
   keyName: K;
   label: string;
-  icon?: string | IconType;             // 👈 allow string or component
+  icon?: string | IconType; // 👈 allow string or component
   value: T[K] | undefined;
   onChange: (v: T[K] | undefined) => void;
   disabled?: boolean;
@@ -28,10 +28,14 @@ export type RendererProps<T, K extends keyof T> = {
   options?: readonly string[];
 };
 
-export type Renderer<T> = <K extends keyof T>(p: RendererProps<T, K>) => JSX.Element;
+export type Renderer<T> = <K extends keyof T>(
+  p: RendererProps<T, K>
+) => JSX.Element;
 
 export type Registry<T> = {
-  byKind: Partial<Record<"text" | "number" | "select" | "richtext", Renderer<T>>>;
+  byKind: Partial<
+    Record<"text" | "number" | "select" | "richtext", Renderer<T>>
+  >;
   byField?: Partial<Record<keyof T, Renderer<T>>>;
   iconFor?: (key?: string) => IconType | undefined;
 };
@@ -39,9 +43,17 @@ export type Registry<T> = {
 export function defaultRegistry<T>(): Registry<T> {
   return {
     byKind: {
-      text: ({ label, value, onChange, disabled, error, placeholder, icon }) => (
+      text: ({
+        label,
+        value,
+        onChange,
+        disabled,
+        error,
+        placeholder,
+        icon,
+      }) => (
         <TaskField
-          icon={resolveIcon(icon)}           // 👈 resolve here
+          icon={resolveIcon(icon)} // 👈 resolve here
           label={label}
           type="text"
           value={value as unknown as string | undefined}
@@ -51,9 +63,17 @@ export function defaultRegistry<T>(): Registry<T> {
           error={error}
         />
       ),
-      number: ({ label, value, onChange, disabled, error, placeholder, icon }) => (
+      number: ({
+        label,
+        value,
+        onChange,
+        disabled,
+        error,
+        placeholder,
+        icon,
+      }) => (
         <TaskField
-          icon={resolveIcon(icon)}           // 👈 resolve here
+          icon={resolveIcon(icon)} // 👈 resolve here
           label={label}
           type="number"
           value={value as unknown as number | undefined}
@@ -66,7 +86,7 @@ export function defaultRegistry<T>(): Registry<T> {
       ),
       select: ({ label, value, onChange, disabled, error, options, icon }) => (
         <TaskField
-          icon={resolveIcon(icon)}           // 👈 resolve here
+          icon={resolveIcon(icon)} // 👈 resolve here
           label={label}
           type="select"
           value={value as unknown as string | undefined}
@@ -77,7 +97,7 @@ export function defaultRegistry<T>(): Registry<T> {
         />
       ),
       richtext: ({ label, value, onChange, disabled, error }) => (
-        <div className="space-y-1">
+        <div>        
           <div className="tw:text-sm tw:text-gray-700">{label}</div>
           <QuillField
             value={(value as unknown as string | undefined) ?? ""}

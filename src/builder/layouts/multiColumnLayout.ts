@@ -9,14 +9,15 @@ export const multiColumnLayout: LayoutConfig<AllInputs> = {
       collapsible: true,
       defaultOpen: true,
       rows: [
-        { cols: "auto", fields: [{ key: "taskName" }, { key: "taskManager" }] },
-        { cols: "auto", fields: [{ key: "taskStatus" }, { key: "priority" }] },
-        { cols: "auto", fields: [{ key: "probability" }, { key: "impact" }] },
+        { cols: 3, fields: [{ key: "taskName"}, { key: "taskManager" }, {key: "taskStatus"}, {key: "priority"}, ] },
+        { cols: 3, fields: [{ key: "probability" }] },
+        { cols: 3, fields: [{ key: "area" }, {key: "seclevel"}] },
         {
-          cols: "auto",
+          cols: 1,
           fields: [
-            { key: "consequence", override: { kind: "richtext" } },
-            { key: "rootCause", override: { kind: "richtext" } },
+            { key: "consequence",override: { kind: "richtext" } },
+            { key: "rootCause",override: { kind: "richtext" } },
+            { key: "impact" },
           ],
         },
       ],
@@ -33,40 +34,24 @@ export const multiColumnLayout: LayoutConfig<AllInputs> = {
         },
       ],
     },
-    // {
-    //   id: "risk",
-    //   title: "Risk",
-    //   collapsible: true,
-    //   defaultOpen: true,
-    //   rows: [
-    //     { cols: "auto", fields: [{ key: "probability" }, { key: "impact" }] },
-    //     {
-    //       cols: 1,
-    //       fields: [
-    //         { key: "consequence", override: { kind: "richtext" } },
-    //         { key: "rootCause", override: { kind: "richtext" } },
-    //       ],
-    //     },
-    //   ],
-    // },
     {
       id: "categories",
       title: "Categories",
       collapsible: true,
       defaultOpen: true,
-      rows: [{ cols: "auto", fields: [{ key: "area" }, { key: "seclevel" }] }],
+      rows: [{ cols: 1, fields: [{ key: "area" }, { key: "seclevel" }] }],
     },
-    {
-      id: "switch",
-      title: "switch",
-      collapsible: true,
-      defaultOpen: true,
-      rows: [
-        {
-          cols: 1,
-          fields: [{ key: "testSwitchNumber" }],
-        },
-      ],
-    },
+    // {
+    //   id: "switch",
+    //   title: "switch",
+    //   collapsible: true,
+    //   defaultOpen: true,
+    //   rows: [
+    //     {
+    //       cols: 1,
+    //       fields: [{ key: "testSwitchNumber" }],
+    //     },
+    //   ],
+    // },
   ],
 };

@@ -6,6 +6,7 @@ type Props = {
   defaultOpen?: boolean;
   children: React.ReactNode;
   className?: string;
+  childrenClassName?: string;
 };
 
 export default function CollapsibleSection({
@@ -13,6 +14,7 @@ export default function CollapsibleSection({
   defaultOpen = true,
   children,
   className = "",
+  childrenClassName = "",
 }: Props) {
   const [open, setOpen] = React.useState(defaultOpen);
   return (
@@ -21,7 +23,7 @@ export default function CollapsibleSection({
         <button
           type="button"
           onClick={() => setOpen((s) => !s)}
-          className="w-full flex items-center gap-2 px-4 py-2 text-left"
+          className=""
         >
           <span className="tw:text-sm tw:font-semibold tw:text-gray-900">
             {title}
@@ -31,7 +33,7 @@ export default function CollapsibleSection({
             : <FaChevronRight className="tw:pl-3 tw:inline-block tw:align-middle tw:text-gray-900"></FaChevronRight> }
         </button>
       </div>
-      {open && <div className="px-4 pb-3">{children}</div>}
+      {open && <div className={childrenClassName}>{children}</div>}
     </section>
   );
 }
