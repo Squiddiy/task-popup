@@ -17,10 +17,7 @@ type Props<T> = {
   disabled?: boolean;
   registry?: Registry<T>;
 
-  /** EITHER pass a pre-built meta map… */
   meta?: Record<string, FieldMeta>;
-
-  /** …or let TaskBuilder compose it from your modules */
   enabledModules?: readonly EnabledModule[];
 };
 
@@ -47,8 +44,8 @@ export function normalizeRows<T>(rows: RowConfig<T>[]): RowConfig<T>[] {
 
     return {
       ...r,
-      cols: cols * factor,                 // becomes `common`
-      colWidth: (r.colWidth ?? 1) * factor,      // keep spacing proportional
+      cols: cols * factor,        
+      colWidth: (r.colWidth ?? 1) * factor,     
     };
   });
 }

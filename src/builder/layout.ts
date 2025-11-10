@@ -20,7 +20,6 @@ export type FieldRef<T, K extends keyof T = keyof T> = {
 export type RowConfig<T> = {
   cols?: number; //Number of columns
   colWidth?: number; //How much space the columns takes up     
-  gap?: number;                    
   fields: FieldRef<T>[];
   visibleIf?: ConditionFn<T>;
 };
