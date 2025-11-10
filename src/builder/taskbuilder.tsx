@@ -5,7 +5,7 @@ import CollapsibleSection from "../components/atoms/CollapsibleSection";
 import type { EnabledModule } from "../composer/TaskCompose";
 import { composeMeta } from "../composer/composeMeta"; // your composeMeta that merges module metas
 import { defaultRegistry, type Registry } from "./registry";
-import type { LayoutConfig } from "./layout";
+import type { LayoutConfig, RowConfig } from "./layout";
 import type { FieldMeta } from "../schemas/schemaMetas/meta"; // { label, icon, placeholder, kind, options, ... }
 
 type Props<T> = {
@@ -23,6 +23,35 @@ type Props<T> = {
   /** …or let TaskBuilder compose it from your modules */
   enabledModules?: readonly EnabledModule[];
 };
+
+// --- math helpers ---
+const gcd = (a: number, b: number): number => (b === 0 ? Math.abs(a) : gcd(b, a % b));
+const lcm2 = (a: number, b: number): number => (a === 0 || b === 0 ? 0 : Math.abs(a * b) / gcd(a, b));
+const lcmArray = (nums: number[]): number => nums.reduce((acc, n) => lcm2(acc, n), 1);
+
+// --- core: normalize rows to a common grid ---
+export function normalizeRows<T>(rows: RowConfig<T>[]): RowConfig<T>[] {
+  const numericCols = rows
+    .map(r => (Number.isFinite(r.cols) ? (r.cols as number) : 1))
+    .filter(n => n > 0);
+
+  if (numericCols.length === 0) return rows.slice();
+
+  const common = lcmArray(numericCols); // e.g. for [3,2,3,...] => 6
+
+  return rows.map(r => {
+    const cols = Number.isFinite(r.cols) ? (r.cols as number) : 1;
+    const factor = common / cols;
+
+    if (!Number.isFinite(factor) || factor <= 0) return { ...r };
+
+    return {
+      ...r,
+      cols: cols * factor,                 // becomes `common`
+      colWidth: (r.colWidth ?? 1) * factor,      // keep spacing proportional
+    };
+  });
+}
 
 export function TaskBuilder<T>({
   schema,
@@ -69,7 +98,11 @@ export function TaskBuilder<T>({
         if (!sectionHasAnyVisibleField(sec)) return null;
         if (sec.visibleIf && !sec.visibleIf({ values })) return null;
 
-        const maxCols =  Math.max(...sec.rows.map((r) => r.cols ?? 1));
+        const normalizedRows = normalizeRows<T>(sec.rows);
+        normalizedRows.map(x=>x.cols)
+
+        const maxCols =  normalizedRows.map(x=>x.cols)[0] || 1;
+
         const childrenClassName = `tw:grid tw:grid-cols-${maxCols}`;
         return (
           <CollapsibleSection
@@ -79,14 +112,10 @@ export function TaskBuilder<T>({
             className="tw:border-b-gray-200 tw:border-b-2"
             childrenClassName={childrenClassName}
           >
-            {sec.rows.map((row, ri) => {
+            {normalizedRows.map((row, ri) => {
               if (row.visibleIf && !row.visibleIf({ values })) return null;
-
-              const cols = row.cols ?? 1;
-              const grid =
-                cols === 1
-                  ? `tw:col-span-${maxCols}`
-                  : `tw:space-y-${row.cols}`;
+              const space = row.colWidth ?? 1;
+              const grid = `tw:col-span-${space}`;
 
               return (
                 <div key={ri} className={grid}>

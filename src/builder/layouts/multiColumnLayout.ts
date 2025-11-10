@@ -9,19 +9,32 @@ export const multiColumnLayout: LayoutConfig<AllInputs> = {
       collapsible: true,
       defaultOpen: true,
       rows: [
-        { cols: 3, fields: [{ key: "taskName"}, { key: "taskManager" }, {key: "taskStatus"}, {key: "priority"}, ] },
-        { cols: 3, fields: [{ key: "probability" }] },
-        { cols: 3, fields: [{ key: "area" }, {key: "seclevel"}, { key: "testSwitchNumber" }] },
-        // {
-        //   cols: ,
-        //   fields: [
-        //     { key: "consequence",override: { kind: "richtext" } },
-        //     { key: "rootCause",override: { kind: "richtext" } },
-        //   ],
-        // },
-        { cols: 2, fields: [{ key: "rootCause" }] },
-        { cols: 2, fields: [{ key: "consequence" }] },
-        { cols: 1, fields: [{ key: "impact" }] },
+        {
+          cols: 3,
+          colWidth: 1,
+          fields: [
+            { key: "taskName" },
+            { key: "taskManager" },
+            { key: "taskStatus" },
+            { key: "priority" },
+          ],
+        },
+        { cols: 3, colWidth: 1, fields: [{ key: "probability" }] },
+        {
+          cols: 3,
+          colWidth: 1,
+          fields: [
+            { key: "area" },
+            { key: "seclevel" },
+            { key: "testSwitchNumber" },
+          ],
+        },
+
+        { cols: 3, colWidth: 2, fields: [{ key: "rootCause" }] },
+        { cols: 3, colWidth: 1, fields: [{ key: "consequence" }] },
+
+        { cols: 2, colWidth: 1, fields: [{ key: "impact" }] },
+        { cols: 2, colWidth: 1, fields: [{ key: "probability" }] },
       ],
     },
     {
@@ -32,6 +45,7 @@ export const multiColumnLayout: LayoutConfig<AllInputs> = {
       rows: [
         {
           cols: 1,
+          colWidth: 1,
           fields: [{ key: "description", override: { kind: "richtext" } }],
         },
       ],
@@ -41,7 +55,13 @@ export const multiColumnLayout: LayoutConfig<AllInputs> = {
       title: "Categories",
       collapsible: true,
       defaultOpen: true,
-      rows: [{ cols: 1, fields: [{ key: "area" }, { key: "seclevel" }] }],
+      rows: [
+        {
+          cols: 1,
+          colWidth: 1,
+          fields: [{ key: "area" }, { key: "seclevel" }],
+        },
+      ],
     },
   ],
 };
