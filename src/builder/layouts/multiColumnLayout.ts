@@ -56,5 +56,17 @@ export const multiColumnLayout: LayoutConfig<AllInputs> = {
       defaultOpen: true,
       rows: [{ cols: "auto", fields: [{ key: "area" }, { key: "seclevel" }] }],
     },
+    {
+      id: "switch",
+      title: "switch",
+      collapsible: true,
+      defaultOpen: true,
+      rows: [
+        {
+          cols: 1,
+          fields: [{ key: "testSwitchNumber" }],
+        },
+      ],
+    },
   ],
 };

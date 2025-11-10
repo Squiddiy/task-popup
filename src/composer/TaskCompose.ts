@@ -6,12 +6,15 @@ import { TaskRiskSchema } from "../schemas/TaskRisk";
 import { TaskBaseMeta } from "../schemas/schemaMetas/TaskBase.meta";
 import { TaskCategoriesMeta } from "../schemas/schemaMetas/TaskCategories.meta";
 import { TaskRiskMeta } from "../schemas/schemaMetas/TaskRisk.meta";
+import { TaskSwitchMeta } from "../schemas/schemaMetas/TaskSwitch.meta";
+import { TaskSwitchSchema } from "../schemas/TaskSwitch";
 
 /** Single source of truth: each module can have { schema, meta? } */
 export const MODULES = {
   base:        { schema: TaskBaseSchema,        meta: TaskBaseMeta },
   categories:  { schema: TaskCategoriesSchema,  meta: TaskCategoriesMeta },
   risk:        { schema: TaskRiskSchema,        meta: TaskRiskMeta },
+  switch:     { schema: TaskSwitchSchema,      meta: TaskSwitchMeta },
   // budget:   { schema: TaskBudgetSchema,      meta: TaskBudgetMeta },
 } as const;
 

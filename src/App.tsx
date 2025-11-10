@@ -10,7 +10,6 @@ import {
 
 import { TaskWrapper } from "./components/organism/TaskWrapper";
 import { multiColumnLayout } from "./builder/layouts/multiColumnLayout";
-import { oneBigSectionLayout } from "./builder/layouts/oneBigSectionLayout";
 import { BreadcrumbPath } from "./components/atoms/HeaderPath";
 
 import type { PathItem } from "./components/atoms/HeaderPath";
@@ -170,7 +169,7 @@ function App() {
     openTask({
       title: "Create New Task",
       taskType: "Task",
-      enabled: ["categories","base","risk"],
+      enabled: ["categories","base","risk", "switch"],
       initialData: {
         area: "Cool Area",
         seclevel: "High",

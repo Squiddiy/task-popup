@@ -33,7 +33,7 @@ export function TaskBuilder<T>({
   disabled,
   registry,
   meta,
-  enabledModules = ["base", "categories", "risk"], // sensible default; adjust to your app
+  enabledModules, // sensible default; adjust to your app
 }: Props<T>) {
   const reg = registry ?? defaultRegistry<T>();
 
