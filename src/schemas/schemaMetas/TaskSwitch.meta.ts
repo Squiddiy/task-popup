@@ -5,9 +5,9 @@ import { TaskSwitchSchema } from "../../schemas/TaskSwitch";
 
 export const TaskSwitchMeta = defineMeta(TaskSwitchSchema, {
     testSwitchNumber: {
-    label: "Test Switch Number",
+    label: "Billable",
     icon: ICON.riskFlag,
-    kind: "number",
+    kind: "switch",
     placeholder: "Turns it on/off",
     }
 });

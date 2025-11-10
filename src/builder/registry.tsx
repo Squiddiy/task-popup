@@ -6,6 +6,7 @@ import TaskField from "../components/atoms/TaskField";
 import QuillField from "../components/atoms/QuillField";
 import type { IconType } from "react-icons";
 import type { JSX } from "react";
+import type { FieldKind } from "../schemas/schemaMetas/meta";
 
 const ICON_MAP = { ...Fa, ...Md, ...Tb, ...Io } as Record<string, IconType>;
 
@@ -34,7 +35,7 @@ export type Renderer<T> = <K extends keyof T>(
 
 export type Registry<T> = {
   byKind: Partial<
-    Record<"text" | "number" | "select" | "richtext", Renderer<T>>
+    Record<FieldKind, Renderer<T>>
   >;
   byField?: Partial<Record<keyof T, Renderer<T>>>;
   iconFor?: (key?: string) => IconType | undefined;
@@ -53,7 +54,7 @@ export function defaultRegistry<T>(): Registry<T> {
         icon,
       }) => (
         <TaskField
-          icon={resolveIcon(icon)} // 👈 resolve here
+          icon={resolveIcon(icon)}
           label={label}
           type="text"
           value={value as unknown as string | undefined}
@@ -73,7 +74,7 @@ export function defaultRegistry<T>(): Registry<T> {
         icon,
       }) => (
         <TaskField
-          icon={resolveIcon(icon)} // 👈 resolve here
+          icon={resolveIcon(icon)} 
           label={label}
           type="number"
           value={value as unknown as number | undefined}
@@ -86,7 +87,7 @@ export function defaultRegistry<T>(): Registry<T> {
       ),
       select: ({ label, value, onChange, disabled, error, options, icon }) => (
         <TaskField
-          icon={resolveIcon(icon)} // 👈 resolve here
+          icon={resolveIcon(icon)} 
           label={label}
           type="select"
           value={value as unknown as string | undefined}
@@ -97,7 +98,7 @@ export function defaultRegistry<T>(): Registry<T> {
         />
       ),
       richtext: ({ label, value, onChange, disabled, error }) => (
-        <div>        
+        <div>
           <div className="tw:text-sm tw:text-gray-700">{label}</div>
           <QuillField
             value={(value as unknown as string | undefined) ?? ""}
@@ -106,6 +107,17 @@ export function defaultRegistry<T>(): Registry<T> {
           />
           {error && <div className="tw:text-red-600 tw:text-sm">{error}</div>}
         </div>
+      ),
+      switch: ({ label, value, onChange, disabled, error, icon }) => (
+        <TaskField
+          icon={resolveIcon(icon)} 
+          label={label}
+          type="switch"
+          value={value as unknown as boolean | undefined}
+          onChange={(v) => onChange((v ?? undefined) as any)}
+          disabled={disabled}
+          error={error}
+        />
       ),
     },
   };
