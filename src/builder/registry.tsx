@@ -44,81 +44,80 @@ export type Registry<T> = {
 export function defaultRegistry<T>(): Registry<T> {
   return {
     byKind: {
-      text: ({
-        label,
-        value,
-        onChange,
-        disabled,
-        error,
-        placeholder,
-        icon,
-      }) => (
-        <TaskField
-          icon={resolveIcon(icon)}
-          label={label}
-          type="text"
-          value={value as unknown as string | undefined}
-          onChange={(v) => onChange((v ?? undefined) as any)}
-          placeholder={placeholder}
-          disabled={disabled}
-          error={error}
-        />
-      ),
-      number: ({
-        label,
-        value,
-        onChange,
-        disabled,
-        error,
-        placeholder,
-        icon,
-      }) => (
-        <TaskField
-          icon={resolveIcon(icon)} 
-          label={label}
-          type="number"
-          value={value as unknown as number | undefined}
-          onChange={(v) => onChange((v ?? undefined) as any)}
-          step={1}
-          disabled={disabled}
-          error={error}
-          placeholder={placeholder}
-        />
-      ),
-      select: ({ label, value, onChange, disabled, error, options, icon }) => (
-        <TaskField
-          icon={resolveIcon(icon)} 
-          label={label}
-          type="select"
-          value={value as unknown as string | undefined}
-          onChange={(v) => onChange(v as any)}
-          options={(options ?? []).map((s) => ({ value: s, label: s }))}
-          disabled={disabled}
-          error={error}
-        />
-      ),
-      richtext: ({ label, value, onChange, disabled, error }) => (
-        <div>
-          <div className="tw:text-sm tw:text-gray-700">{label}</div>
-          <QuillField
-            value={(value as unknown as string | undefined) ?? ""}
-            onChange={(html) => onChange((html ?? undefined) as any)}
-            readOnly={disabled}
+      text: (<K extends keyof T>(p: RendererProps<T, K>) => {
+        const { label, value, onChange, disabled, error, placeholder, icon } = p;
+        return (
+          <TaskField
+            icon={resolveIcon(icon)}
+            label={label}
+            type="text"
+            value={value as unknown as string | undefined}
+            onChange={(v: string) => onChange(v as unknown as T[K] | undefined)}
+            placeholder={placeholder}
+            disabled={disabled}
+            error={error}
           />
-          {error && <div className="tw:text-red-600 tw:text-sm">{error}</div>}
-        </div>
-      ),
-      switch: ({ label, value, onChange, disabled, error, icon }) => (
-        <TaskField
-          icon={resolveIcon(icon)} 
-          label={label}
-          type="switch"
-          value={value as unknown as boolean | undefined}
-          onChange={(v) => onChange((v ?? undefined) as any)}
-          disabled={disabled}
-          error={error}
-        />
-      ),
+        );
+      }),
+      number: (<K extends keyof T>(p: RendererProps<T, K>) => {
+        const { label, value, onChange, disabled, error, placeholder, icon } = p;
+        return (
+          <TaskField
+            icon={resolveIcon(icon)}
+            label={label}
+            type="number"
+            value={value as unknown as number | undefined}
+            onChange={(v: number | "") => onChange((v as unknown) as T[K] | undefined)}
+            step={1}
+            disabled={disabled}
+            error={error}
+            placeholder={placeholder}
+          />
+        );
+      }),
+      select: (<K extends keyof T>(p: RendererProps<T, K>) => {
+        const { label, value, onChange, disabled, error, options, icon } = p;
+        return (
+          <TaskField
+            icon={resolveIcon(icon)}
+            label={label}
+            type="select"
+            value={value as unknown as string | number | undefined}
+            onChange={(v: string | number) => onChange(v as unknown as T[K] | undefined)}
+            options={(options ?? []).map((s) => ({ value: s, label: s }))}
+            disabled={disabled}
+            error={error}
+          />
+        );
+      }),
+      richtext: (<K extends keyof T>(p: RendererProps<T, K>) => {
+        const { label, value, onChange, disabled, error } = p;
+        return (
+          <div>
+            <div className="tw:text-sm tw:text-gray-700">{label}</div>
+            <QuillField
+              value={value as unknown as string}
+              onChange={(v: string) => onChange(v as unknown as T[K] | undefined)}
+              readOnly={disabled}
+            />
+            {error && <div className="tw:text-red-600 tw:text-sm">{error}</div>}
+          </div>
+        );
+      }),
+      switch: (<K extends keyof T>(p: RendererProps<T, K>) => {
+        const { label, value, onChange, disabled, error, icon } = p;
+        return (
+          <TaskField
+            icon={resolveIcon(icon)}
+            label={label}
+            type="switch"
+            value={value as unknown as boolean}
+            onChange={(v: boolean) => onChange(v as unknown as T[K] | undefined)}
+            disabled={disabled}
+            error={error}
+          />
+        );
+      }),
     },
   };
 }

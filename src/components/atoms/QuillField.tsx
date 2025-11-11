@@ -10,7 +10,8 @@ type Props = {
   placeholder?: string;
   readOnly?: boolean;
   className?: string; // wrapper styling
-  toolbar?: any; // optional custom toolbar config
+  // toolbar config is flexible; avoid `any` and prefer unknown until full quill types are added
+  toolbar?: unknown;
 };
 
 export default function QuillField({
@@ -23,7 +24,12 @@ export default function QuillField({
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const editorRef = useRef<HTMLDivElement | null>(null);
-  const quillRef = useRef<any>(null);
+  type QuillInstance = {
+    clipboard: { dangerouslyPasteHTML: (html: string) => void };
+    on: (event: string, cb: () => void) => void;
+    enable: (enabled: boolean) => void;
+  };
+  const quillRef = useRef<QuillInstance | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -41,14 +47,15 @@ export default function QuillField({
         if ("adoptedStyleSheets" in node) {
           const sheet = new CSSStyleSheet();
           sheet.replaceSync(snowCss);
-          (node as any).adoptedStyleSheets = [
-            ...((node as any).adoptedStyleSheets || []),
+          // ShadowRoot has adoptedStyleSheets
+          (node as ShadowRoot).adoptedStyleSheets = [
+            ...(((node as ShadowRoot).adoptedStyleSheets as CSSStyleSheet[]) || []),
             sheet,
           ];
         } else {
           const style = document.createElement("style");
           style.textContent = snowCss;
-          (node as any).appendChild(style);
+          (node as ShadowRoot).appendChild(style);
         }
       } else {
         // ✅ node is a Document here
@@ -60,7 +67,7 @@ export default function QuillField({
         }
       }
 
-      // Create the editable element Quill expects
+  // Create the editable element Quill expects
       editorRef.current = document.createElement("div");
       containerRef.current.appendChild(editorRef.current);
 
@@ -69,7 +76,7 @@ export default function QuillField({
         readOnly,
         placeholder,
         modules: {
-          toolbar: toolbar ?? [
+          toolbar: (toolbar as any) ?? [
             ["bold", "italic", "underline"],
             [{ list: "ordered" }, { list: "bullet" }],
             ["link"],

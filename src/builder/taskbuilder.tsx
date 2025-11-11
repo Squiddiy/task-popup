@@ -4,7 +4,7 @@ import { z } from "zod";
 import CollapsibleSection from "../components/atoms/CollapsibleSection";
 import type { EnabledModule } from "../composer/TaskCompose";
 import { composeMeta } from "../composer/composeMeta"; // your composeMeta that merges module metas
-import { defaultRegistry, type Registry } from "./registry";
+import { defaultRegistry, type Registry, type Renderer } from "./registry";
 import type { LayoutConfig } from "./layout";
 import type { FieldMeta } from "../schemas/schemaMetas/meta"; // { label, icon, placeholder, kind, options, ... }
 
@@ -38,7 +38,7 @@ export function TaskBuilder<T>({
   const reg = registry ?? defaultRegistry<T>();
 
   // composed schema is ZodObject (composeSchema uses merge)
-  const shape = (schema as z.ZodObject<any>).shape;
+  const shape = (schema as z.ZodObject<z.ZodRawShape>).shape;
 
   // Compose meta once (prefer explicit meta prop over composing from modules)
   const metaMap = React.useMemo(

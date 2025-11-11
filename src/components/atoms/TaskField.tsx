@@ -85,7 +85,7 @@ function LabelBlock({ id, icon: Icon, label }: { id?: string; icon?: IconType; l
       htmlFor={id}
       className="tw:flex tw:items-center tw:gap-2 tw:min-w-28 tw:whitespace-nowrap tw:text-gray-700"
     >
-      {Icon && React.createElement(Icon as React.ComponentType<any>, { size: 18 })}
+      {Icon && <Icon size={18} />}
       <span className="tw:font-medium">{label}</span>
     </label>
   );
@@ -194,25 +194,25 @@ function SwitchReadOnly({ checked }: { checked: boolean }) {
 function SwitchControl({
   id,
   label,
-  checked,
+  value,
   onChange,
   disabled,
 }: {
   id?: string;
   label: string;
-  checked: boolean;
+  value: boolean;
   onChange: (v: boolean) => void;
   disabled?: boolean;
 }) {
   return (
     <Switch
       id={id}
-      checked={checked}
+      checked={value}
       onChange={onChange}
       disabled={disabled}
       className={cx(
         "tw:relative tw:inline-flex tw:h-6 tw:w-11 tw:items-center tw:rounded-full tw:transition-colors",
-        checked ? "tw:bg-emerald-500" : "tw:bg-gray-300",
+        value ? "tw:bg-emerald-500" : "tw:bg-gray-300",
         disabled ? "tw:opacity-50 tw:cursor-not-allowed" : "tw:cursor-pointer"
       )}
     >
@@ -220,7 +220,7 @@ function SwitchControl({
       <span
         className={cx(
           "tw:inline-block tw:h-5 tw:w-5 tw:transform tw:rounded-full tw:bg-white tw:transition-transform",
-          checked ? "tw:translate-x-5" : "tw:translate-x-1"
+          value ? "tw:translate-x-5" : "tw:translate-x-1"
         )}
       />
     </Switch>
@@ -258,7 +258,7 @@ export default function TaskField(props: Props) {
             <SwitchControl
               id={id}
               label={label}
-              checked={!!props.value}
+              value={!!props.value}
               onChange={props.onChange}
               disabled={disabled}
             />

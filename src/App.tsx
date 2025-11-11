@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import {
   composeSchema,
+  type AllInputs,
   type EnabledModule,
   type InputsFromEnabled,
 } from "./composer/TaskCompose";
@@ -17,6 +18,7 @@ import type { OnChangeFn } from "./components/organism/TaskWrapper";
 
 import tailwindCss from "./index.css?inline";
 import { TaskBuilder } from "./builder/taskbuilder";
+import type { LayoutConfig } from "./builder/layout";
 export function createShadowRootWithTailwind(): {
   rootEl: HTMLElement;
   cleanup: () => void;
@@ -54,8 +56,9 @@ function openTask<
   const S extends z.ZodTypeAny | undefined = undefined
 >(opts: {
   title?: string;
-  taskType?: TaskType
+  taskType?: TaskType;
   enabled?: E;
+  layout?: LayoutConfig<AllInputs>;
   initialData?: Partial<
     S extends z.ZodTypeAny ? z.input<S> : InputsFromEnabled<E>
   >;
@@ -80,6 +83,7 @@ function openTask<
     title = "",
     taskType = "Task",
     enabled, // ✅ default only base
+    layout,
     initialData,
     render,
     titlePath = [],
@@ -87,36 +91,39 @@ function openTask<
 
   const enabledModules = (enabled ?? (["base"] as const)) as E;
   // Build/choose schema (strict merged object from your composeSchema)
-  const Schema = composeSchema(enabledModules) as S extends z.ZodTypeAny
-    ? S
-    : z.ZodType<InputsFromEnabled<E>>;
+  const Schema = composeSchema(
+    enabledModules,
+    layout ?? undefined
+  ) as S extends z.ZodTypeAny ? S : z.ZodType<InputsFromEnabled<E>>;
+
+  console.log(Schema);
 
   // Default renderer (unchanged)
+  type TValues = S extends z.ZodTypeAny ? z.input<S> : InputsFromEnabled<E>;
+
+  //If no fields are enabled, provide an empty layout to avoid errors
+  const emptyLayout: LayoutConfig<AllInputs> = {
+    sections: [],
+  };
+
   const defaultRender = ({
     values,
     onChange,
     errors,
   }: {
-    values: any;
-    onChange: OnChangeFn<
-      S extends z.ZodTypeAny ? z.input<S> : InputsFromEnabled<E>
-    >;
+    values: TValues;
+    onChange: OnChangeFn<TValues>;
     isValid: boolean;
-    errors: Partial<
-      Record<
-        keyof (S extends z.ZodTypeAny ? z.input<S> : InputsFromEnabled<E>),
-        string
-      >
-    >;
+    errors: Partial<Record<keyof TValues, string>>;
   }) => (
     <TaskBuilder
-      schema={Schema} // the composed schema you already built
-      layout={multiColumnLayout} // pick any layout you want
-      values={values}
-      onChange={(patch) => onChange(patch, true)} // adapt to your OnChangeFn<T>
+      schema={Schema} // composed schema that is built of enables & layout
+      layout={layout ?? emptyLayout}
+      values={values as Partial<TValues>}
+      onChange={(patch) => onChange(patch, true)}
       errors={errors}
       disabled={false}
-      // registry={customRegistry} // optional, if you have one
+      // registry={customRegistry} // optional
     />
   );
 
@@ -129,10 +136,14 @@ function openTask<
       cleanup();
     };
 
-    const handleSubmit = (data: any) => {
-      const parsed = (Schema as z.ZodTypeAny).parse(data); // strict at runtime
+    const handleSubmit = (data: TValues) => {
+      const parsed = (Schema as z.ZodType<TValues>).parse(data); // strict at runtime
       close();
-      resolve(parsed as any);
+      resolve(
+        parsed as unknown as S extends z.ZodTypeAny
+          ? z.output<S>
+          : InputsFromEnabled<E>
+      );
     };
 
     const handleCancel = () => {
@@ -141,24 +152,29 @@ function openTask<
     };
 
     const pathNode = (
-      <div className="flex flex-col gap-1">
+      <div className="tw:flex tw:flex-col tw:gap-1">
         {titlePath?.length > 0 && <BreadcrumbPath items={titlePath} />}
       </div>
     );
-
-    type TValues = S extends z.ZodTypeAny ? z.input<S> : InputsFromEnabled<E>;
 
     root.render(
       <TaskWrapper<TValues>
         title={title}
         taskType={taskType}
-        pathNode={pathNode as any}
+        pathNode={pathNode as React.ReactNode}
         container={rootEl}
         schema={Schema as z.ZodType<TValues>}
         initialData={(initialData ?? {}) as TValues}
         onSubmit={handleSubmit}
         onCancel={handleCancel}
-        render={(render as any) ?? (defaultRender as any)}
+        render={
+          (render ?? defaultRender) as (args: {
+            values: TValues;
+            onChange: OnChangeFn<TValues>;
+            isValid: boolean;
+            errors: Partial<Record<keyof TValues, string>>;
+          }) => React.ReactNode
+        }
       />
     );
   });
@@ -169,18 +185,18 @@ function App() {
     openTask({
       title: "Create New Task",
       taskType: "Task",
-      enabled: ["categories","base","risk", "switch"],
+      enabled: ["categories", "base", "risk", "switch"],
+      layout: multiColumnLayout,
       initialData: {
         area: "Cool Area",
         seclevel: "High",
-        
+
         // taskName: "Ny aktivitet",
         // probability: 3,
         // impact: 2,
         // taskManager: "Oliver",
         // taskStatus: "Active",
         // priority: 100,
-        
       },
       titlePath: [
         { name: "Projekt X", onClick: () => console.log("Clicked Projekt X") },

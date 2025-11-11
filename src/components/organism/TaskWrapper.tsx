@@ -58,6 +58,7 @@ export function TaskWrapper<T>({
   );
 
   const validateAll = (formData: T) => {
+    console.log(schema);
     const result = schema.safeParse(formData);
     console.log(result);
     if (result.success) {
@@ -82,6 +83,7 @@ export function TaskWrapper<T>({
   };
 
   const handleSubmit = () => {
+    console.log(data);
     const res = validateAll(data);
     if (!res.ok) {
       setIsValid(false);

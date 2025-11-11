@@ -20,7 +20,7 @@ export const TaskBaseMeta = defineMeta(TaskBaseSchema, {
   priority: {
     label: "Priority",
     icon: ICON.priority,
-    kind: "select",
+    kind: "number",
     options: ["Low", "Medium", "High"],
   },
   description: {
