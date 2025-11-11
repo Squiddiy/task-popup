@@ -69,8 +69,7 @@ export function TaskBuilder<T>({
         if (!sectionHasAnyVisibleField(sec)) return null;
         if (sec.visibleIf && !sec.visibleIf({ values })) return null;
 
-        const maxCols =  Math.max(...sec.rows.map((r) => r.cols ?? 1));
-        const childrenClassName = `tw:grid tw:grid-cols-${maxCols}`;
+        const childrenClassName = `tw:flex tw:flex-row tw:flex-wrap`;
         return (
           <CollapsibleSection
             key={sec.id}
@@ -81,12 +80,7 @@ export function TaskBuilder<T>({
           >
             {sec.rows.map((row, ri) => {
               if (row.visibleIf && !row.visibleIf({ values })) return null;
-
-              const cols = row.cols ?? 1;
-              const grid =
-                cols === 1
-                  ? `tw:col-span-${maxCols}`
-                  : `tw:space-y-${row.cols}`;
+              const grid = `tw:flex tw:flex-col tw:flex-auto`;
 
               return (
                 <div key={ri} className={grid}>

@@ -92,7 +92,7 @@ const Popup = ({
         ref={dialogRef}
         aria-labelledby={title ? titleId.current : undefined}
         className={clsx(
-          "tw-popup tw:p-0 tw:w-[min(900px,95vw)] tw:max-h-[90vh] tw:rounded-xl tw:overflow-hidden",
+          "tw-popup tw:w-fit tw:p-0 tw:w-[min(900px,95vw)] tw:max-h-[90vh] tw:rounded-xl tw:overflow-hidden",
           "tw:bg-white tw:shadow-2xl",
           // 👇 New positioning rules
           "tw:left-1/3 tw:top-[5%] -tw:translate-x-1/2 tw:m-0",

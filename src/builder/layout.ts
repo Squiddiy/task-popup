@@ -18,8 +18,6 @@ export type FieldRef<T, K extends keyof T = keyof T> = {
 };
 
 export type RowConfig<T> = {
-  cols?: number;      // grid columns
-  gap?: number;                    // tailwind gap-x
   fields: FieldRef<T>[];
   visibleIf?: ConditionFn<T>;
 };
