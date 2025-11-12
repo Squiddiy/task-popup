@@ -3,10 +3,10 @@ import * as Md from "react-icons/md";
 import * as Tb from "react-icons/tb";
 import * as Io from "react-icons/io5";
 import TaskField from "../components/atoms/TaskField";
-import QuillField from "../components/atoms/QuillField";
 import type { IconType } from "react-icons";
 import type { JSX } from "react";
 import type { FieldKind } from "../schemas/schemaMetas/meta";
+import QuillWrapper from "../components/atoms/QuillWrapper";
 
 const ICON_MAP = { ...Fa, ...Md, ...Tb, ...Io } as Record<string, IconType>;
 
@@ -34,9 +34,7 @@ export type Renderer<T> = <K extends keyof T>(
 ) => JSX.Element;
 
 export type Registry<T> = {
-  byKind: Partial<
-    Record<FieldKind, Renderer<T>>
-  >;
+  byKind: Partial<Record<FieldKind, Renderer<T>>>;
   byField?: Partial<Record<keyof T, Renderer<T>>>;
   iconFor?: (key?: string) => IconType | undefined;
 };
@@ -44,8 +42,9 @@ export type Registry<T> = {
 export function defaultRegistry<T>(): Registry<T> {
   return {
     byKind: {
-      text: (<K extends keyof T>(p: RendererProps<T, K>) => {
-        const { label, value, onChange, disabled, error, placeholder, icon } = p;
+      text: <K extends keyof T>(p: RendererProps<T, K>) => {
+        const { label, value, onChange, disabled, error, placeholder, icon } =
+          p;
         return (
           <TaskField
             icon={resolveIcon(icon)}
@@ -58,24 +57,27 @@ export function defaultRegistry<T>(): Registry<T> {
             error={error}
           />
         );
-      }),
-      number: (<K extends keyof T>(p: RendererProps<T, K>) => {
-        const { label, value, onChange, disabled, error, placeholder, icon } = p;
+      },
+      number: <K extends keyof T>(p: RendererProps<T, K>) => {
+        const { label, value, onChange, disabled, error, placeholder, icon } =
+          p;
         return (
           <TaskField
             icon={resolveIcon(icon)}
             label={label}
             type="number"
             value={value as unknown as number | undefined}
-            onChange={(v: number | "") => onChange((v as unknown) as T[K] | undefined)}
+            onChange={(v: number | "") =>
+              onChange(v as unknown as T[K] | undefined)
+            }
             step={1}
             disabled={disabled}
             error={error}
             placeholder={placeholder}
           />
         );
-      }),
-      select: (<K extends keyof T>(p: RendererProps<T, K>) => {
+      },
+      select: <K extends keyof T>(p: RendererProps<T, K>) => {
         const { label, value, onChange, disabled, error, options, icon } = p;
         return (
           <TaskField
@@ -83,28 +85,31 @@ export function defaultRegistry<T>(): Registry<T> {
             label={label}
             type="select"
             value={value as unknown as string | number | undefined}
-            onChange={(v: string | number) => onChange(v as unknown as T[K] | undefined)}
+            onChange={(v: string | number) =>
+              onChange(v as unknown as T[K] | undefined)
+            }
             options={(options ?? []).map((s) => ({ value: s, label: s }))}
             disabled={disabled}
             error={error}
           />
         );
-      }),
-      richtext: (<K extends keyof T>(p: RendererProps<T, K>) => {
+      },
+      richtext: <K extends keyof T>(p: RendererProps<T, K>) => {
         const { label, value, onChange, disabled, error } = p;
         return (
           <div>
-            <div className="tw:text-sm tw:text-gray-700">{label}</div>
-            <QuillField
+            <QuillWrapper
               value={value as unknown as string}
-              onChange={(v: string) => onChange(v as unknown as T[K] | undefined)}
+              onChange={(v: string) =>
+                onChange(v as unknown as T[K] | undefined)
+              }
               readOnly={disabled}
             />
             {error && <div className="tw:text-red-600 tw:text-sm">{error}</div>}
           </div>
         );
-      }),
-      switch: (<K extends keyof T>(p: RendererProps<T, K>) => {
+      },
+      switch: <K extends keyof T>(p: RendererProps<T, K>) => {
         const { label, value, onChange, disabled, error, icon } = p;
         return (
           <TaskField
@@ -112,12 +117,20 @@ export function defaultRegistry<T>(): Registry<T> {
             label={label}
             type="switch"
             value={value as unknown as boolean}
-            onChange={(v: boolean) => onChange(v as unknown as T[K] | undefined)}
+            onChange={(v: boolean) =>
+              onChange(v as unknown as T[K] | undefined)
+            }
             disabled={disabled}
             error={error}
           />
         );
-      }),
+      },
+      calculated: <K extends keyof T>(p: RendererProps<T, K>) => {
+        const { } = p;
+        return (
+          <></>
+        );
+      },
     },
   };
 }

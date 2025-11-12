@@ -10,7 +10,12 @@ export const TaskBaseMeta = defineMeta(TaskBaseSchema, {
     kind: "text",
     placeholder: "Enter task name…",
   },
-  taskManager: { label: "Owner", icon: ICON.owner, kind: "text", placeholder: "Enter owner…" },
+  taskManager: {
+    label: "Owner",
+    icon: ICON.owner,
+    kind: "text",
+    placeholder: "Enter owner…",
+  },
   taskStatus: {
     label: "Status",
     icon: ICON.status,

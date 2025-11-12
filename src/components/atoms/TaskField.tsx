@@ -55,8 +55,8 @@ type Props = TextProps | NumberProps | SelectProps | SwitchProps;
 const cx = (...c: Array<string | false | null | undefined>) => c.filter(Boolean).join(" ");
 
 const baseInput =
-  "tw:bg-transparent tw:outline-none tw:border-none focus:tw:ring-0 tw:text-gray-900 placeholder:tw:text-gray-400";
-const numberAlign = "tw:text-right tw:tabular-nums";
+  "tw:bg-transparent tw:outline-none tw:border-none focus:tw:ring-0 tw:text-gray-400 placeholder:tw:text-gray-200";
+const numberAlign = "tw:text-left tw:tabular-nums";
 const fieldInputClasses = cx(
   baseInput,
   numberAlign,
@@ -83,10 +83,10 @@ function LabelBlock({ id, icon: Icon, label }: { id?: string; icon?: IconType; l
   return (
     <label
       htmlFor={id}
-      className="tw:flex tw:items-center tw:gap-2 tw:min-w-28 tw:whitespace-nowrap tw:text-gray-700"
+      className="tw:flex tw:items-center tw:gap-2 tw:w-28 tw:whitespace-nowrap tw:text-gray-700"
     >
       {Icon && <Icon size={18} />}
-      <span className="tw:font-medium">{label}</span>
+      <span className="tw:font-medium tw:min-w-1/2 tw:overflow-hidden tw:text-ellipsis" title={label}>{label}</span>
     </label>
   );
 }

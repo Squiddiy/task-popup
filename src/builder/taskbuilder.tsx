@@ -33,26 +33,33 @@ export function TaskBuilder<T>({
   disabled,
   registry,
   meta,
-  enabledModules, // sensible default; adjust to your app
+  enabledModules,
 }: Props<T>) {
   const reg = registry ?? defaultRegistry<T>();
-
-  // composed schema is ZodObject (composeSchema uses merge)
   const shape = (schema as z.ZodObject<z.ZodRawShape>).shape;
 
-  // Compose meta once (prefer explicit meta prop over composing from modules)
   const metaMap = React.useMemo(
     () => meta ?? composeMeta(enabledModules as EnabledModule[]),
     [meta, enabledModules]
   );
 
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [minWidth, setMinWidth] = React.useState<string>();
+
+  React.useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (el) {
+      // Measure after layout to get natural full width
+      const width = el.scrollWidth;
+      setMinWidth(`${width}px`);
+    }
+  }, [layout, values]); // Recalculate if layout or field sizes change
+
   const set = <K extends keyof T>(key: K, val: T[K] | undefined) =>
     onChange({ [key]: val } as Partial<T>);
-
   const get = <K extends keyof T>(key: K) => values[key];
   const getError = (key: keyof T) => errors?.[key];
 
-  // Skip entire sections that have no enabled fields in the schema
   function sectionHasAnyVisibleField(
     sec: LayoutConfig<T>["sections"][number]
   ): boolean {
@@ -61,15 +68,18 @@ export function TaskBuilder<T>({
     );
   }
 
-
-
   return (
-    <div>
+    <div
+      ref={containerRef}
+      style={minWidth ? { minWidth } : undefined}
+      className="tw:w-fit tw:max-w-full"
+    >
       {layout.sections.map((sec) => {
         if (!sectionHasAnyVisibleField(sec)) return null;
         if (sec.visibleIf && !sec.visibleIf({ values })) return null;
 
         const childrenClassName = `tw:flex tw:flex-row tw:flex-wrap`;
+
         return (
           <CollapsibleSection
             key={sec.id}
@@ -87,27 +97,23 @@ export function TaskBuilder<T>({
                   {row.fields.map((f) => {
                     const key = f.key as string;
                     const s = shape[key];
-                    if (!s) return null; // field not in schema → skip
+                    if (!s) return null;
 
-                    // Pull meta from composed map, then let overrides win
                     const mm = metaMap[key] ?? ({} as FieldMeta);
                     const label = f.override?.label ?? mm.label ?? key;
-                    const icon = f.override?.icon ?? mm.icon; // string token | string | IconType; registry resolves
+                    const icon = f.override?.icon ?? mm.icon;
                     const kind = f.override?.kind ?? mm.kind ?? "text";
                     const options = f.override?.options ?? mm.options;
                     const placeholder =
                       f.override?.placeholder ?? mm.placeholder;
 
-                    // Pick renderer by field or by kind
                     const renderer =
                       reg.byField?.[f.key] ??
                       (kind
                         ? (reg.byKind as Record<string, any>)[kind]
                         : undefined);
-
                     if (!renderer) return null;
 
-                    // Computed fields become read-only (no onChange)
                     const value =
                       f.compute?.({ values }) ?? (get(f.key) as any);
 
@@ -138,3 +144,4 @@ export function TaskBuilder<T>({
     </div>
   );
 }
+
