@@ -16,41 +16,30 @@ import { BreadcrumbPath } from "./components/atoms/HeaderPath";
 import type { PathItem } from "./components/atoms/HeaderPath";
 import type { OnChangeFn } from "./components/organism/TaskWrapper";
 
-import tailwindCss from "./index.css?inline";
 import { TaskBuilder } from "./builder/taskbuilder";
 import type { LayoutConfig } from "./builder/layout";
-export function createShadowRootWithTailwind(): {
-  rootEl: HTMLElement;
-  cleanup: () => void;
-} {
+
+/**
+ * Plain DOM mount (no ShadowRoot).
+ * Make sure your Tailwind stylesheet is loaded globally (e.g., in main.tsx or index.html).
+ */
+function createMountNode(): { rootEl: HTMLElement; cleanup: () => void } {
   const container = document.createElement("div");
+  // Optional: give it an identifiable id / stacking context if you want
+  container.id = `task-popup-${Date.now()}`;
+  // If you rely on high z-index for your dialog/popups, you can uncomment this:
+  // container.style.position = "relative";
+  // container.style.zIndex = "9999";
+
   document.body.appendChild(container);
-
-  const shadowRoot = container.attachShadow({ mode: "open" });
-  const rootEl = document.createElement("div");
-  shadowRoot.appendChild(rootEl);
-
-  // ✅ Inject Tailwind CSS into shadow DOM
-  const sheet = new CSSStyleSheet();
-  sheet.replaceSync(tailwindCss);
-  shadowRoot.adoptedStyleSheets = [sheet];
-
-  // Optional fallback tweaks
-  const fallbackStyle = document.createElement("style");
-  fallbackStyle.textContent = `
-    :host, *, ::before, ::after {
-      --tw-border-style: solid;
-    }
-  `;
-  shadowRoot.appendChild(fallbackStyle);
-
   return {
-    rootEl,
+    rootEl: container,
     cleanup: () => container.remove(),
   };
 }
 
 export type TaskType = "Task" | "Risk" | "Gate" | "Milestone";
+
 function openTask<
   const E extends readonly EnabledModule[] = readonly ["base"],
   const S extends z.ZodTypeAny | undefined = undefined
@@ -82,7 +71,7 @@ function openTask<
   const {
     title = "",
     taskType = "Task",
-    enabled, // ✅ default only base
+    enabled,
     layout,
     initialData,
     render,
@@ -90,21 +79,16 @@ function openTask<
   } = opts;
 
   const enabledModules = (enabled ?? (["base"] as const)) as E;
-  // Build/choose schema (strict merged object from your composeSchema)
+
   const Schema = composeSchema(
     enabledModules,
     layout ?? undefined
   ) as S extends z.ZodTypeAny ? S : z.ZodType<InputsFromEnabled<E>>;
 
-  console.log(Schema);
-
-  // Default renderer (unchanged)
   type TValues = S extends z.ZodTypeAny ? z.input<S> : InputsFromEnabled<E>;
 
-  //If no fields are enabled, provide an empty layout to avoid errors
-  const emptyLayout: LayoutConfig<AllInputs> = {
-    sections: [],
-  };
+  // If no fields are enabled, provide an empty layout to avoid errors
+  const emptyLayout: LayoutConfig<AllInputs> = { sections: [] };
 
   const defaultRender = ({
     values,
@@ -117,18 +101,18 @@ function openTask<
     errors: Partial<Record<keyof TValues, string>>;
   }) => (
     <TaskBuilder
-      schema={Schema} // composed schema that is built of enables & layout
+      schema={Schema}
       layout={layout ?? emptyLayout}
       values={values as Partial<TValues>}
       onChange={(patch) => onChange(patch, true)}
       errors={errors}
       disabled={false}
-      // registry={customRegistry} // optional
     />
   );
 
   return new Promise((resolve) => {
-    const { rootEl, cleanup } = createShadowRootWithTailwind();
+    // ⬇️ Use normal DOM node instead of ShadowRoot
+    const { rootEl, cleanup } = createMountNode();
     const root = createRoot(rootEl);
 
     const close = () => {
@@ -137,7 +121,7 @@ function openTask<
     };
 
     const handleSubmit = (data: TValues) => {
-      const parsed = (Schema as z.ZodType<TValues>).parse(data); // strict at runtime
+      const parsed = (Schema as z.ZodType<TValues>).parse(data);
       close();
       resolve(
         parsed as unknown as S extends z.ZodTypeAny
@@ -190,20 +174,10 @@ function App() {
       initialData: {
         area: "Cool Area",
         seclevel: "High",
-
-        // taskName: "Ny aktivitet",
-        // probability: 3,
-        // impact: 2,
-        // taskManager: "Oliver",
-        // taskStatus: "Active",
-        // priority: 100,
       },
       titlePath: [
         { name: "Projekt X", onClick: () => console.log("Clicked Projekt X") },
-        {
-          name: "Riskhantering",
-          onClick: () => console.log("Clicked Riskhantering"),
-        },
+        { name: "Riskhantering", onClick: () => console.log("Clicked Riskhantering") },
       ],
     }).then((result) => {
       if (result) {
