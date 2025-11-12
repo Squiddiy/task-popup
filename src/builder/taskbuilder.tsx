@@ -127,7 +127,7 @@ export function TaskBuilder<T>({
                           onChange: (v: any) =>
                             f.compute ? undefined : set(f.key, v),
                           disabled:
-                            disabled || f.override?.readOnly || !!f.compute,
+                            disabled || f.override?.readOnly || !!f.compute || kind === "calculated",
                           error: getError(f.key),
                           placeholder,
                           options,

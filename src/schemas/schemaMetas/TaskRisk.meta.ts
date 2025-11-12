@@ -28,4 +28,10 @@ export const TaskRiskMeta = defineMeta(TaskRiskSchema, {
     kind: "richtext",
     placeholder: "Write a reason…",
   },
+  riskValue: {
+    label: "Risk Value",
+    icon: ICON.riskFlag,
+    kind: "calculated",
+    placeholder: "",
+  }
 });

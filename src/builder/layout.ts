@@ -1,6 +1,8 @@
 // builder/layout.ts
 export type ConditionFn<T> = (ctx: { values: Partial<T> }) => boolean;
-export type ComputeFn<T, K extends keyof T> = (ctx: { values: Partial<T> }) => T[K];
+export type ComputeFn<T, K extends keyof T> = (ctx: {
+  values: Partial<T>;
+}) => T[K];
 
 export type FieldRef<T, K extends keyof T = keyof T> = {
   key: K;
@@ -8,13 +10,14 @@ export type FieldRef<T, K extends keyof T = keyof T> = {
     label?: string;
     placeholder?: string;
     icon?: string;
+    infoIcon?: string; // NEW: right-side info icon
     kind?: "text" | "number" | "select" | "richtext" | "date" | "checkbox";
     options?: readonly string[];
     readOnly?: boolean;
   };
   visibleIf?: ConditionFn<T>;
   disabledIf?: ConditionFn<T>;
-  compute?: ComputeFn<T, K>;      // for computed read-only values (e.g., riskValue)
+  compute?: ComputeFn<T, K>; // for computed read-only values (e.g., riskValue)
 };
 
 export type RowConfig<T> = {

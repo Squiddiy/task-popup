@@ -21,6 +21,7 @@ export type RendererProps<T, K extends keyof T> = {
   keyName: K;
   label: string;
   icon?: string | IconType; // 👈 allow string or component
+  infoIcon?: string | IconType;
   value: T[K] | undefined;
   onChange: (v: T[K] | undefined) => void;
   disabled?: boolean;
@@ -126,9 +127,22 @@ export function defaultRegistry<T>(): Registry<T> {
         );
       },
       calculated: <K extends keyof T>(p: RendererProps<T, K>) => {
-        const { } = p;
+        const { label, value, icon, error, placeholder } = p;
         return (
-          <></>
+          <TaskField
+            icon={resolveIcon(icon)}
+            label={label}
+            type="number"
+            value={(value as unknown as number) ?? ""} // show empty when NaN/undefined
+            onChange={() => {
+              /* no-op: read-only */
+            }}
+            readOnly={true}
+            disabled={true}
+            error={error}
+            placeholder={placeholder}
+            step={1}
+          />
         );
       },
     },

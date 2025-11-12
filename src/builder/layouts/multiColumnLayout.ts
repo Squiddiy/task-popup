@@ -19,8 +19,16 @@ export const multiColumnLayout: LayoutConfig<AllInputs> = {
         },
         {
           fields: [
-            { key: "area" },
-            { key: "seclevel" },
+            { key: "impact" },
+            { key: "probability" },
+            {
+              key: "riskValue",
+              compute: ({ values }) => {
+                const impactValue = Number(values.impact ?? 0);
+                const probabilityValue = Number(values.probability ?? 0);
+                return impactValue * probabilityValue;
+              },
+            },
             { key: "testSwitchNumber" },
           ],
         },

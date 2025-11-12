@@ -2,11 +2,18 @@
 import { z } from "zod";
 import type { IconType } from "react-icons";
 
-export type FieldKind = "text" | "number" | "select" | "richtext" | "switch" | "calculated";
+export type FieldKind =
+  | "text"
+  | "number"
+  | "select"
+  | "richtext"
+  | "switch"
+  | "calculated";
 
 export type FieldMeta = {
   label: string;
   icon?: string | IconType; // string resolved via ICON_MAP
+  infoIcon?: string | IconType;
   placeholder?: string;
   kind?: FieldKind;
   options?: readonly string[]; // for selects

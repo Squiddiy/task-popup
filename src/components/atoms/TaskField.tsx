@@ -52,7 +52,8 @@ type Props = TextProps | NumberProps | SelectProps | SwitchProps;
 
 /* ---------------- Utils ---------------- */
 
-const cx = (...c: Array<string | false | null | undefined>) => c.filter(Boolean).join(" ");
+const cx = (...c: Array<string | false | null | undefined>) =>
+  c.filter(Boolean).join(" ");
 
 const baseInput =
   "tw:bg-transparent tw:outline-none tw:border-none focus:tw:ring-0 tw:text-gray-400 placeholder:tw:text-gray-200";
@@ -63,10 +64,13 @@ const fieldInputClasses = cx(
   "tw:min-w-[8rem] tw:flex-1 tw:border-b tw:border-gray-200 focus:tw:border-gray-400"
 );
 
-const getSelectLabel = (val: string | number | undefined, options: Option[]) => {
+const getSelectLabel = (
+  val: string | number | undefined,
+  options: Option[]
+) => {
   if (val == null) return "";
   const s = String(val);
-  return options.find(o => o.value === s)?.label ?? s;
+  return options.find((o) => o.value === s)?.label ?? s;
 };
 
 /* ---------------- Small, focused pieces ---------------- */
@@ -74,25 +78,42 @@ const getSelectLabel = (val: string | number | undefined, options: Option[]) => 
 function FieldRow({ children }: { children: React.ReactNode }) {
   return (
     <div className="tw:py-2">
-      <div className="tw:grid tw:items-center tw:gap-x-3 tw:grid-cols-[1fr_auto]">{children}</div>
+      <div className="tw:grid tw:items-center tw:gap-x-3 tw:grid-cols-[1fr_auto]">
+        {children}
+      </div>
     </div>
   );
 }
 
-function LabelBlock({ id, icon: Icon, label }: { id?: string; icon?: IconType; label: string }) {
+function LabelBlock({
+  id,
+  icon: Icon,
+  label,
+}: {
+  id?: string;
+  icon?: IconType;
+  label: string;
+}) {
   return (
     <label
       htmlFor={id}
       className="tw:flex tw:items-center tw:gap-2 tw:w-28 tw:whitespace-nowrap tw:text-gray-700"
     >
       {Icon && <Icon size={18} />}
-      <span className="tw:font-medium tw:min-w-1/2 tw:overflow-hidden tw:text-ellipsis" title={label}>{label}</span>
+      <span
+        className="tw:font-medium tw:min-w-1/2 tw:overflow-hidden tw:text-ellipsis"
+        title={label}
+      >
+        {label}
+      </span>
     </label>
   );
 }
 
 function ReadOnlyText({ value }: { value: React.ReactNode }) {
-  return <span className="tw:min-w-[8rem] tw:flex-1 tw:font-medium">{value}</span>;
+  return (
+    <span className="tw:min-w-[8rem] tw:flex-1 tw:font-medium">{value}</span>
+  );
 }
 
 function ErrorText({ error }: { error?: string }) {
@@ -131,7 +152,17 @@ function NumberInput({
   step,
   placeholder,
   disabled,
-}: Pick<NumberProps, "id" | "value" | "onChange" | "min" | "max" | "step" | "placeholder" | "disabled">) {
+}: Pick<
+  NumberProps,
+  | "id"
+  | "value"
+  | "onChange"
+  | "min"
+  | "max"
+  | "step"
+  | "placeholder"
+  | "disabled"
+>) {
   return (
     <input
       id={id}
@@ -182,7 +213,9 @@ function SwitchReadOnly({ checked }: { checked: boolean }) {
     <span
       className={cx(
         "tw:inline-flex tw:items-center tw:px-2 tw:py-0.5 tw:text-sm tw:rounded-full",
-        checked ? "tw:bg-emerald-100 tw:text-emerald-700" : "tw:bg-gray-100 tw:text-gray-600"
+        checked
+          ? "tw:bg-emerald-100 tw:text-emerald-700"
+          : "tw:bg-gray-100 tw:text-gray-600"
       )}
       aria-readonly="true"
     >
@@ -211,7 +244,8 @@ function SwitchControl({
       onChange={onChange}
       disabled={disabled}
       className={cx(
-        "tw:relative tw:inline-flex tw:h-6 tw:w-11 tw:items-center tw:rounded-full tw:transition-colors",
+        // container
+        "tw:relative tw:inline-flex tw:h-3 tw:w-6 tw:items-center tw:rounded-full tw:transition-colors",
         value ? "tw:bg-emerald-500" : "tw:bg-gray-300",
         disabled ? "tw:opacity-50 tw:cursor-not-allowed" : "tw:cursor-pointer"
       )}
@@ -219,8 +253,9 @@ function SwitchControl({
       <span className="tw:sr-only">{label}</span>
       <span
         className={cx(
-          "tw:inline-block tw:h-5 tw:w-5 tw:transform tw:rounded-full tw:bg-white tw:transition-transform",
-          value ? "tw:translate-x-5" : "tw:translate-x-1"
+          // thumb
+          "tw:inline-block tw:h-2.5 tw:w-2.5 tw:transform tw:rounded-full tw:bg-white tw:transition-transform",
+          value ? "tw:translate-x-3" : "tw:translate-x-0.5"
         )}
       />
     </Switch>
@@ -278,19 +313,17 @@ export default function TaskField(props: Props) {
               disabled={disabled}
             />
           )
+        ) : // type === "text"
+        readOnly ? (
+          <ReadOnlyText value={props.value ?? ""} />
         ) : (
-          // type === "text"
-          readOnly ? (
-            <ReadOnlyText value={props.value ?? ""} />
-          ) : (
-            <TextInput
-              id={id}
-              value={props.value ?? ""}
-              onChange={props.onChange}
-              placeholder={props.placeholder}
-              disabled={disabled}
-            />
-          )
+          <TextInput
+            id={id}
+            value={props.value ?? ""}
+            onChange={props.onChange}
+            placeholder={props.placeholder}
+            disabled={disabled}
+          />
         )}
       </div>
 
