@@ -56,7 +56,7 @@ const cx = (...c: Array<string | false | null | undefined>) =>
   c.filter(Boolean).join(" ");
 
 const baseInput =
-  "tw:bg-transparent tw:outline-none tw:border-none focus:tw:ring-0 tw:text-gray-400 placeholder:tw:text-gray-200";
+  "tw:bg-transparent tw:outline-none tw:border-none focus:tw:ring-0 tw:text-gray-400 tw:focus:text-gray-900 placeholder:tw:text-gray-200";
 const numberAlign = "tw:text-left tw:tabular-nums";
 const fieldInputClasses = cx(
   baseInput,
@@ -112,7 +112,7 @@ function LabelBlock({
 
 function ReadOnlyText({ value }: { value: React.ReactNode }) {
   return (
-    <span className="tw:min-w-[8rem] tw:flex-1 tw:font-medium">{value}</span>
+    <span className="tw:min-w-[8rem] tw:flex-1 tw:text-gray-400">{value}</span>
   );
 }
 
@@ -134,6 +134,7 @@ function TextInput({
     <input
       id={id}
       type="text"
+      title={value}
       value={value ?? ""}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}

@@ -16,8 +16,15 @@ import { BreadcrumbPath } from "./components/atoms/HeaderPath";
 import type { PathItem } from "./components/atoms/HeaderPath";
 import type { OnChangeFn } from "./components/organism/TaskWrapper";
 
+import {TASKSTATUS} from "./schemas/TaskBase"
+
 import { TaskBuilder } from "./builder/taskbuilder";
 import type { LayoutConfig } from "./builder/layout";
+import {
+  QueryClient,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { getRiskById } from "./services/api/apiService";
 
 /**
  * Plain DOM mount (no ShadowRoot).
@@ -25,11 +32,7 @@ import type { LayoutConfig } from "./builder/layout";
  */
 function createMountNode(): { rootEl: HTMLElement; cleanup: () => void } {
   const container = document.createElement("div");
-  // Optional: give it an identifiable id / stacking context if you want
   container.id = `task-popup-${Date.now()}`;
-  // If you rely on high z-index for your dialog/popups, you can uncomment this:
-  // container.style.position = "relative";
-  // container.style.zIndex = "9999";
 
   document.body.appendChild(container);
   return {
@@ -163,21 +166,70 @@ function openTask<
     );
   });
 }
+const queryClient = new QueryClient({
+  /* ... */
+});
+declare global {
+  interface Window {
+    __TANSTACK_QUERY_CLIENT__: import("@tanstack/query-core").QueryClient;
+  }
+}
+window.__TANSTACK_QUERY_CLIENT__ = queryClient;
+
+type ValueTextObj = {
+  Value: number;
+  Text: string;
+};
+
+export type RiskObj = {
+  ID: number;
+  Name: string;
+  Description: string;
+  DescriptionFormat: string;
+  Action: string;
+  Probability: ValueTextObj;
+  Impact: ValueTextObj;
+  Priority: number;
+  Position: number;
+  ProjectId: number;
+  ParentId: number;
+  TaskManager: number;
+  Status: number;
+  Categories: number[];
+}
+
 
 function App() {
-  const handleOpen = () => {
+  const queryClient = useQueryClient();
+
+  const handleOpen = async () => {
+    // fetch (or reuse cached) data before opening
+    const risk : RiskObj = await queryClient.fetchQuery({
+      queryKey: ["riskById", 545939],
+      queryFn: () => getRiskById(545939),
+    });
+
+    console.log(risk);
+
     openTask({
-      title: "Create New Task",
+      title: risk.Name,
       taskType: "Task",
-      enabled: ["categories", "base", "risk", "switch"],
+      enabled: ["base", "risk", "switch"],
       layout: multiColumnLayout,
       initialData: {
-        area: "Cool Area",
-        seclevel: "High",
+        rootCause: risk.Action,
+        taskManager: ": (",
+        taskStatus: TASKSTATUS[risk.Status - 1],
+        description: risk.Description,
+        impact: risk.Impact.Value,
+        probability: risk.Probability.Value,
       },
       titlePath: [
         { name: "Projekt X", onClick: () => console.log("Clicked Projekt X") },
-        { name: "Riskhantering", onClick: () => console.log("Clicked Riskhantering") },
+        {
+          name: "Riskhantering",
+          onClick: () => console.log("Clicked Riskhantering"),
+        },
       ],
     }).then((result) => {
       if (result) {

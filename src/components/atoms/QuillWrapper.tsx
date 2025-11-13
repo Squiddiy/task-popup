@@ -3,12 +3,12 @@ import type Quill from "quill";
 import { initQuillTextEditor } from "../Quill.module"; // adjust path if needed
 
 type Props = {
-  value: string | null | undefined;         // HTML string
+  value: string | null | undefined; // HTML string
   onChange: (html: string) => void;
   readOnly?: boolean;
   placeholder?: string;
-  image?: boolean;                           // enable your image pipeline
-  className?: string;                        // wrapper styling
+  image?: boolean; // enable your image pipeline
+  className?: string; // wrapper styling
 };
 
 let qwCounter = 0;
@@ -29,7 +29,7 @@ export default function QuillWrapper({
   const selector = `#${domId}`;
 
   const quillRef = useRef<Quill | null>(null);
-  const isPastingRef = useRef(false); 
+  const isPastingRef = useRef(false);
 
   useEffect(() => {
     if (!hostRef.current) return;
@@ -37,7 +37,8 @@ export default function QuillWrapper({
     const q = initQuillTextEditor(selector, image);
     quillRef.current = q;
 
-    const editorEl = hostRef.current.querySelector<HTMLDivElement>(".ql-editor");
+    const editorEl =
+      hostRef.current.querySelector<HTMLDivElement>(".ql-editor");
     if (editorEl && placeholder) {
       editorEl.setAttribute("data-placeholder", placeholder);
     }
@@ -85,7 +86,7 @@ export default function QuillWrapper({
 
   return (
     <div className={className}>
-      <div id={domId} ref={hostRef} />
+      <div id={domId} ref={hostRef} style={{ height: "fit-content" }} />
     </div>
   );
 }

@@ -2,6 +2,7 @@
 import { defineMeta } from "./meta";
 import { ICON } from "./IconResolver";
 import { TaskBaseSchema } from "../../schemas/TaskBase"; // your pure zod schema
+import { TASKSTATUS } from "../../schemas/TaskBase";
 
 export const TaskBaseMeta = defineMeta(TaskBaseSchema, {
   taskName: {
@@ -20,7 +21,7 @@ export const TaskBaseMeta = defineMeta(TaskBaseSchema, {
     label: "Status",
     icon: ICON.status,
     kind: "select",
-    options: ["Not Started", "Active", "Blocked", "Done"],
+    options: TASKSTATUS,
   },
   priority: {
     label: "Priority",

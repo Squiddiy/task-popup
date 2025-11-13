@@ -11,7 +11,6 @@ export const multiColumnLayout: LayoutConfig<AllInputs> = {
       rows: [
         {
           fields: [
-            { key: "taskName" },
             { key: "taskManager" },
             { key: "taskStatus" },
             { key: "priority" },
@@ -46,8 +45,8 @@ export const multiColumnLayout: LayoutConfig<AllInputs> = {
       ],
     },
     {
-      id: "rootCause",
-      title: "rootCause",
+      id: "measure",
+      title: "Measure",
       collapsible: true,
       defaultOpen: true,
       rows: [
