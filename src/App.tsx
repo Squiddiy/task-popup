@@ -24,7 +24,7 @@ import {
   QueryClient,
   useQueryClient,
 } from "@tanstack/react-query";
-import { getRiskById } from "./services/api/apiService";
+import { getRiskById, getUserNames } from "./services/api/apiService";
 
 /**
  * Plain DOM mount (no ShadowRoot).
@@ -166,22 +166,11 @@ function openTask<
     );
   });
 }
-const queryClient = new QueryClient({
-  /* ... */
-});
-declare global {
-  interface Window {
-    __TANSTACK_QUERY_CLIENT__: import("@tanstack/query-core").QueryClient;
-  }
-}
-window.__TANSTACK_QUERY_CLIENT__ = queryClient;
-
 type ValueTextObj = {
   Value: number;
   Text: string;
 };
-
-export type RiskObj = {
+type RiskObj = {
   ID: number;
   Name: string;
   Description: string;
@@ -209,7 +198,14 @@ function App() {
       queryFn: () => getRiskById(545939),
     });
 
+    const names : ValueTextObj[] = await queryClient.fetchQuery({
+      queryKey: ["getNames"],
+      queryFn: () => getUserNames(),
+    });
+
+
     console.log(risk);
+    console.log(names);
 
     openTask({
       title: risk.Name,
@@ -218,11 +214,12 @@ function App() {
       layout: multiColumnLayout,
       initialData: {
         rootCause: risk.Action,
-        taskManager: ": (",
+        taskManager: names.find(x=>x.Value == risk.TaskManager)?.Text ?? "",
         taskStatus: TASKSTATUS[risk.Status - 1],
-        description: risk.Description,
+        description: risk.DescriptionFormat,
         impact: risk.Impact.Value,
         probability: risk.Probability.Value,
+        testSwitchNumber: true,
       },
       titlePath: [
         { name: "Projekt X", onClick: () => console.log("Clicked Projekt X") },

@@ -17,6 +17,7 @@ export type FieldMeta = {
   placeholder?: string;
   kind?: FieldKind;
   options?: readonly string[]; // for selects
+  loadOptions?: () => Promise<readonly string[]>;
   readOnly?: boolean;
 };
 

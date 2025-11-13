@@ -28,6 +28,7 @@ export type RendererProps<T, K extends keyof T> = {
   error?: string;
   placeholder?: string;
   options?: readonly string[];
+  optionsLoader?: () => Promise<readonly string[]>;
 };
 
 export type Renderer<T> = <K extends keyof T>(

@@ -3,6 +3,7 @@ import { defineMeta } from "./meta";
 import { ICON } from "./IconResolver";
 import { TaskBaseSchema } from "../../schemas/TaskBase"; // your pure zod schema
 import { TASKSTATUS } from "../../schemas/TaskBase";
+import { getUserNamesAsStringList } from "../../services/api/apiService";
 
 export const TaskBaseMeta = defineMeta(TaskBaseSchema, {
   taskName: {
@@ -14,8 +15,12 @@ export const TaskBaseMeta = defineMeta(TaskBaseSchema, {
   taskManager: {
     label: "Owner",
     icon: ICON.owner,
-    kind: "text",
+    kind: "select",
     placeholder: "Enter owner…",
+    loadOptions: async () => {
+      const managers = await getUserNamesAsStringList();
+      return managers;
+    }
   },
   taskStatus: {
     label: "Status",

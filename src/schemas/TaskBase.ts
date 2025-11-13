@@ -4,7 +4,7 @@ export const TASKSTATUS = ["Aktivt", "Preliminärt", "Avslutat", "Pausad", "Mall
 
 export const TaskBaseSchema = z.object({
   taskName: z.string().min(1, "Krävs"),
-  taskManager: z.string().min(1, "Krävs"),
+  taskManager: z.string().optional(), // string, not enum
   taskStatus: z.enum(TASKSTATUS),
   description: z.string().default(""),
   priority: z.number().int().optional(),

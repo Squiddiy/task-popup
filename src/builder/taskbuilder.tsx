@@ -3,10 +3,83 @@ import React from "react";
 import { z } from "zod";
 import CollapsibleSection from "../components/atoms/CollapsibleSection";
 import type { EnabledModule } from "../composer/TaskCompose";
-import { composeMeta } from "../composer/composeMeta"; // your composeMeta that merges module metas
+import { composeMeta } from "../composer/composeMeta"; // merges module metas
 import { defaultRegistry, type Registry, type Renderer } from "./registry";
 import type { LayoutConfig } from "./layout";
-import type { FieldMeta } from "../schemas/schemaMetas/meta"; // { label, icon, placeholder, kind, options, ... }
+import type { FieldMeta } from "../schemas/schemaMetas/meta"; // { label, icon, placeholder, kind, options, optionsLoader, ... }
+
+// --- Small helper component to handle async options per field ---
+
+type FieldRendererProps<T, K extends keyof T> = {
+  renderer: Renderer<T>;
+  keyName: K;
+  label: string;
+  icon?: any;
+  value: T[K] | undefined;
+  onChange: (v: T[K] | undefined) => void;
+  disabled?: boolean;
+  error?: string;
+  placeholder?: string;
+  options?: readonly string[];
+  optionsLoader?: () => Promise<readonly string[]>;
+};
+
+function FieldRenderer<T, K extends keyof T>({
+  renderer,
+  keyName,
+  label,
+  icon,
+  value,
+  onChange,
+  disabled,
+  error,
+  placeholder,
+  options,
+  optionsLoader,
+}: FieldRendererProps<T, K>) {
+  const [resolvedOptions, setResolvedOptions] = React.useState<
+    readonly string[] | undefined
+  >(options);
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    // If we already have static options, just use them.
+    if (options && options.length > 0) {
+      setResolvedOptions(options);
+      return;
+    }
+
+    if (!optionsLoader) return;
+
+    optionsLoader()
+      .then((opts) => {
+        if (!cancelled) setResolvedOptions(opts);
+      })
+      .catch((err) => {
+        console.error("Failed to load options for field", label, err);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [options, optionsLoader, label]);
+
+  // Call the registry renderer with the final options
+  return renderer({
+    keyName,
+    label,
+    icon,
+    value,
+    onChange,
+    disabled,
+    error,
+    placeholder,
+    options: resolvedOptions,
+  } as any);
+}
+
+// --- Main TaskBuilder ---
 
 type Props<T> = {
   schema: z.ZodType<T>;
@@ -104,6 +177,7 @@ export function TaskBuilder<T>({
                     const icon = f.override?.icon ?? mm.icon;
                     const kind = f.override?.kind ?? mm.kind ?? "text";
                     const options = f.override?.options ?? mm.options;
+                    const optionsLoader = mm.loadOptions;
                     const placeholder =
                       f.override?.placeholder ?? mm.placeholder;
 
@@ -119,19 +193,26 @@ export function TaskBuilder<T>({
 
                     return (
                       <React.Fragment key={String(f.key)}>
-                        {renderer({
-                          keyName: f.key,
-                          label,
-                          icon,
-                          value,
-                          onChange: (v: any) =>
-                            f.compute ? undefined : set(f.key, v),
-                          disabled:
-                            disabled || f.override?.readOnly || !!f.compute || kind === "calculated",
-                          error: getError(f.key),
-                          placeholder,
-                          options,
-                        })}
+                        <FieldRenderer
+                          renderer={renderer as Renderer<T>}
+                          keyName={f.key as keyof T}
+                          label={label}
+                          icon={icon}
+                          value={value}
+                          onChange={(v: any) =>
+                            f.compute ? undefined : set(f.key, v)
+                          }
+                          disabled={
+                            disabled ||
+                            f.override?.readOnly ||
+                            !!f.compute ||
+                            kind === "calculated"
+                          }
+                          error={getError(f.key)}
+                          placeholder={placeholder}
+                          options={options}
+                          optionsLoader={optionsLoader}
+                        />
                       </React.Fragment>
                     );
                   })}
@@ -144,4 +225,3 @@ export function TaskBuilder<T>({
     </div>
   );
 }
-
