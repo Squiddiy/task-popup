@@ -27,27 +27,23 @@ export type InputsFromEnabled<E extends readonly EnabledModule[]> =
   UnionToIntersection<InputOf<E[number]>> extends never ? {} : UnionToIntersection<InputOf<E[number]>>;
 
 export const ALL_MODULES = Object.keys(MODULES) as readonly EnabledModule[];
-
-// ---- Compose schema from MODULES ----
 import type { LayoutConfig } from "../builder/layout";
+
 
 export function composeSchema<const E extends readonly EnabledModule[]>(
   enabled: E,
   layout?: LayoutConfig<any>
 ): z.ZodType<InputsFromEnabled<E>> {
-  // Collect modules' full schemas
   const parts = enabled
     .map((m) => MODULES[m].schema)
     .filter(Boolean) as unknown as z.ZodObject<z.ZodRawShape>[];
 
-  // Helper: extract string keys used in a layout
   const keysFromLayout = (l?: LayoutConfig<any>): Set<string> => {
     const keys = new Set<string>();
     if (!l) return keys;
     for (const sec of l.sections ?? []) {
       for (const row of sec.rows ?? []) {
         for (const f of row.fields ?? []) {
-          // field.key may be typed as keyof T; stringify for runtime
           keys.add(String(f.key));
         }
       }
@@ -60,15 +56,12 @@ export function composeSchema<const E extends readonly EnabledModule[]>(
   if (layout) {
     const usedKeys = keysFromLayout(layout);
 
-    // gather all keys available from the enabled schemas to detect mismatches
     const availableKeys = new Set<string>();
     for (const s of parts) Object.keys(s.shape).forEach((k) => availableKeys.add(k));
 
     // warn if layout contains keys not available in any enabled schema
     for (const k of usedKeys) {
       if (!availableKeys.has(k)) {
-        // keep behavior permissive but notify developer
-        // eslint-disable-next-line no-console
         console.warn(`Layout key '${k}' not found in any enabled schema modules.`);
       }
     }

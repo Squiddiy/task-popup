@@ -4,9 +4,11 @@ import * as Fa from "react-icons/fa6";
 import * as Md from "react-icons/md";
 import * as Tb from "react-icons/tb";
 import * as Io from "react-icons/io5";
+import * as Ci from "react-icons/ci";
+import * as Pi from "react-icons/pi";
 
 /** Direct access to every icon */
-export const ICON_PACK = { ...Fa, ...Md, ...Tb, ...Io } as Record<
+export const ICON_PACK = { ...Fa, ...Md, ...Tb, ...Io, ...Ci, ...Pi } as Record<
   string,
   IconType
 >;
@@ -20,6 +22,7 @@ export const ICON = {
   owner: Fa.FaUser,
   description: Md.MdDescription,
   tags: Io.IoPricetag,
+  warning: Pi.PiWarningCircle,
 } as const satisfies Record<string, IconType>;
 
 export type IconToken = keyof typeof ICON;

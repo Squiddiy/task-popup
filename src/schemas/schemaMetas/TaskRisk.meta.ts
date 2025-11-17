@@ -33,5 +33,10 @@ export const TaskRiskMeta = defineMeta(TaskRiskSchema, {
     icon: ICON.riskFlag,
     kind: "calculated",
     placeholder: "",
-  }
+    compute: ({ values }) => {
+      const impactValue = Number(values.impact ?? 0);
+      const probabilityValue = Number(values.probability ?? 0);
+      return impactValue * probabilityValue;
+    },
+  },
 });

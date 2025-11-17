@@ -17,7 +17,6 @@ export type FieldRef<T, K extends keyof T = keyof T> = {
   };
   visibleIf?: ConditionFn<T>;
   disabledIf?: ConditionFn<T>;
-  compute?: ComputeFn<T, K>; // for computed read-only values (e.g., riskValue)
 };
 
 export type RowConfig<T> = {

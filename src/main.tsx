@@ -15,10 +15,11 @@ declare global {
 }
 window.__TANSTACK_QUERY_CLIENT__ = queryClient;
 
-
 createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
-    <App />
-    <ReactQueryDevtools initialIsOpen={false} />
+    <StrictMode>
+      <App />
+      <ReactQueryDevtools initialIsOpen={false} />
+    </StrictMode>
   </QueryClientProvider>
 );

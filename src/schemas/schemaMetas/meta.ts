@@ -21,15 +21,20 @@ export type FieldMeta = {
   readOnly?: boolean;
 };
 
-// A module-level meta object: keys must match the schema’s keys
-export type ModuleFieldMeta<TKeys extends string> = {
-  [K in TKeys]?: FieldMeta;
-};
+// --- NEW helper type for compute, per schema+field ---
+
+type ComputeForSchemaField<
+  S extends z.ZodTypeAny,
+  K extends keyof z.input<S>
+> = (ctx: { values: Partial<z.input<S>> }) => z.input<S>[K];
 
 // Meta mapped to a schema's input keys (partial: you don't need every key)
-export type MetaForSchema<S extends z.ZodTypeAny> = Partial<
-  Record<keyof z.input<S>, FieldMeta>
->;
+export type MetaForSchema<S extends z.ZodTypeAny> = {
+  [K in keyof z.input<S>]?: FieldMeta & {
+    // optional compute for this *specific* field
+    compute?: ComputeForSchemaField<S, K>;
+  };
+};
 
 // Accept a schema and a meta map; get full key safety + autocomplete
 export function defineMeta<S extends z.ZodTypeAny>(

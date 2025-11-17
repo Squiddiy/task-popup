@@ -22,11 +22,6 @@ export const multiColumnLayout: LayoutConfig<AllInputs> = {
             { key: "probability" },
             {
               key: "riskValue",
-              compute: ({ values }) => {
-                const impactValue = Number(values.impact ?? 0);
-                const probabilityValue = Number(values.probability ?? 0);
-                return impactValue * probabilityValue;
-              },
             },
             { key: "testSwitchNumber" },
           ],
@@ -40,7 +35,7 @@ export const multiColumnLayout: LayoutConfig<AllInputs> = {
       defaultOpen: true,
       rows: [
         {
-          fields: [{ key: "description", override: { kind: "richtext" } }],
+          fields: [{ key: "description" }],
         },
       ],
     },
@@ -51,7 +46,7 @@ export const multiColumnLayout: LayoutConfig<AllInputs> = {
       defaultOpen: true,
       rows: [
         {
-          fields: [{ key: "rootCause", override: { kind: "richtext" } }],
+          fields: [{ key: "rootCause" }],
         },
       ],
     },
@@ -62,7 +57,7 @@ export const multiColumnLayout: LayoutConfig<AllInputs> = {
       defaultOpen: true,
       rows: [
         {
-          fields: [{ key: "consequence", override: { kind: "richtext" } }],
+          fields: [{ key: "consequence" }],
         },
       ],
     },

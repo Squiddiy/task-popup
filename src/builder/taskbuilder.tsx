@@ -6,7 +6,7 @@ import type { EnabledModule } from "../composer/TaskCompose";
 import { composeMeta } from "../composer/composeMeta"; // merges module metas
 import { defaultRegistry, type Registry, type Renderer } from "./registry";
 import type { LayoutConfig } from "./layout";
-import type { FieldMeta } from "../schemas/schemaMetas/meta"; // { label, icon, placeholder, kind, options, optionsLoader, ... }
+import type { FieldMeta } from "../schemas/schemaMetas/meta"; // base meta type
 
 // --- Small helper component to handle async options per field ---
 
@@ -15,6 +15,7 @@ type FieldRendererProps<T, K extends keyof T> = {
   keyName: K;
   label: string;
   icon?: any;
+  infoIcon?: any; // NEW: right-side info icon
   value: T[K] | undefined;
   onChange: (v: T[K] | undefined) => void;
   disabled?: boolean;
@@ -29,6 +30,7 @@ function FieldRenderer<T, K extends keyof T>({
   keyName,
   label,
   icon,
+  infoIcon,
   value,
   onChange,
   disabled,
@@ -70,6 +72,7 @@ function FieldRenderer<T, K extends keyof T>({
     keyName,
     label,
     icon,
+    infoIcon,
     value,
     onChange,
     disabled,
@@ -91,7 +94,7 @@ type Props<T> = {
   registry?: Registry<T>;
 
   /** EITHER pass a pre-built meta map… */
-  meta?: Record<string, FieldMeta>;
+  meta?: Record<string, FieldMeta & { compute?: (ctx: { values: Partial<T> }) => any }>;
 
   /** …or let TaskBuilder compose it from your modules */
   enabledModules?: readonly EnabledModule[];
@@ -111,8 +114,13 @@ export function TaskBuilder<T>({
   const reg = registry ?? defaultRegistry<T>();
   const shape = (schema as z.ZodObject<z.ZodRawShape>).shape;
 
+  // metaMap: enriched so we *know* compute may exist on entries
   const metaMap = React.useMemo(
-    () => meta ?? composeMeta(enabledModules as EnabledModule[]),
+    () =>
+      (meta ?? composeMeta(enabledModules as EnabledModule[])) as Record<
+        string,
+        FieldMeta & { compute?: (ctx: { values: Partial<T> }) => any }
+      >,
     [meta, enabledModules]
   );
 
@@ -172,9 +180,17 @@ export function TaskBuilder<T>({
                     const s = shape[key];
                     if (!s) return null;
 
-                    const mm = metaMap[key] ?? ({} as FieldMeta);
+                    const mm =
+                      metaMap[key] ??
+                      ({
+                        label: key,
+                      } as FieldMeta & {
+                        compute?: (ctx: { values: Partial<T> }) => any;
+                      });
+
                     const label = f.override?.label ?? mm.label ?? key;
                     const icon = f.override?.icon ?? mm.icon;
+                    const infoIcon = f.override?.infoIcon ?? mm.infoIcon;
                     const kind = f.override?.kind ?? mm.kind ?? "text";
                     const options = f.override?.options ?? mm.options;
                     const optionsLoader = mm.loadOptions;
@@ -188,8 +204,18 @@ export function TaskBuilder<T>({
                         : undefined);
                     if (!renderer) return null;
 
-                    const value =
-                      f.compute?.({ values }) ?? (get(f.key) as any);
+                    // --- NEW: compute resolution priority ---
+                    // 1) layout-level compute (FieldRef.compute)
+                    // 2) meta-level compute (mm.compute)
+
+                    const computeFn = mm.compute
+                    const isComputed = typeof computeFn === "function";
+
+                    const value = isComputed
+                      ? (computeFn!({ values }) as any)
+                      : (get(f.key) as any);
+
+                    const isReadOnly = f.override?.readOnly || mm.readOnly || isComputed || kind === "calculated";
 
                     return (
                       <React.Fragment key={String(f.key)}>
@@ -198,16 +224,13 @@ export function TaskBuilder<T>({
                           keyName={f.key as keyof T}
                           label={label}
                           icon={icon}
+                          infoIcon={infoIcon}
                           value={value}
-                          onChange={(v: any) =>
-                            f.compute ? undefined : set(f.key, v)
-                          }
-                          disabled={
-                            disabled ||
-                            f.override?.readOnly ||
-                            !!f.compute ||
-                            kind === "calculated"
-                          }
+                          onChange={(v: any) => {
+                            if (isComputed) return; // calculated fields don't push changes back
+                            set(f.key, v);
+                          }}
+                          disabled={disabled || isReadOnly}
                           error={getError(f.key)}
                           placeholder={placeholder}
                           options={options}
