@@ -3,19 +3,27 @@ import React from "react";
 import { z } from "zod";
 import CollapsibleSection from "../components/atoms/CollapsibleSection";
 import type { EnabledModule } from "../composer/TaskCompose";
-import { composeMeta } from "../composer/composeMeta"; // merges module metas
+import { composeMeta } from "../composer/composeMeta";
 import { defaultRegistry, type Registry, type Renderer } from "./registry";
 import type { LayoutConfig } from "./layout";
-import type { FieldMeta } from "../schemas/schemaMetas/meta"; // base meta type
+import type {
+  FieldMeta,
+  InfoIconComputedResult,
+} from "../schemas/schemaMetas/meta";
+import type { IconType } from "react-icons";
 
-// --- Small helper component to handle async options per field ---
+// ---- FieldRenderer ----
 
 type FieldRendererProps<T, K extends keyof T> = {
   renderer: Renderer<T>;
   keyName: K;
   label: string;
   icon?: any;
-  infoIcon?: any; // NEW: right-side info icon
+  infoIconComputed?: {
+    icon?: any;
+    className?: string;
+    title?: string;
+  };
   value: T[K] | undefined;
   onChange: (v: T[K] | undefined) => void;
   disabled?: boolean;
@@ -30,7 +38,7 @@ function FieldRenderer<T, K extends keyof T>({
   keyName,
   label,
   icon,
-  infoIcon,
+  infoIconComputed,
   value,
   onChange,
   disabled,
@@ -46,12 +54,10 @@ function FieldRenderer<T, K extends keyof T>({
   React.useEffect(() => {
     let cancelled = false;
 
-    // If we already have static options, just use them.
     if (options && options.length > 0) {
       setResolvedOptions(options);
       return;
     }
-
     if (!optionsLoader) return;
 
     optionsLoader()
@@ -67,12 +73,11 @@ function FieldRenderer<T, K extends keyof T>({
     };
   }, [options, optionsLoader, label]);
 
-  // Call the registry renderer with the final options
   return renderer({
     keyName,
     label,
     icon,
-    infoIcon,
+    infoIconComputed,
     value,
     onChange,
     disabled,
@@ -82,7 +87,7 @@ function FieldRenderer<T, K extends keyof T>({
   } as any);
 }
 
-// --- Main TaskBuilder ---
+// ---- TaskBuilder ----
 
 type Props<T> = {
   schema: z.ZodType<T>;
@@ -93,10 +98,16 @@ type Props<T> = {
   disabled?: boolean;
   registry?: Registry<T>;
 
-  /** EITHER pass a pre-built meta map… */
-  meta?: Record<string, FieldMeta & { compute?: (ctx: { values: Partial<T> }) => any }>;
-
-  /** …or let TaskBuilder compose it from your modules */
+  meta?: Record<
+    string,
+    FieldMeta & {
+      compute?: (ctx: { values: Partial<T> }) => any;
+      infoIconCompute?: (ctx: {
+        value: any;
+        values: Partial<T>;
+      }) => InfoIconComputedResult;
+    }
+  >;
   enabledModules?: readonly EnabledModule[];
 };
 
@@ -114,12 +125,17 @@ export function TaskBuilder<T>({
   const reg = registry ?? defaultRegistry<T>();
   const shape = (schema as z.ZodObject<z.ZodRawShape>).shape;
 
-  // metaMap: enriched so we *know* compute may exist on entries
   const metaMap = React.useMemo(
     () =>
       (meta ?? composeMeta(enabledModules as EnabledModule[])) as Record<
         string,
-        FieldMeta & { compute?: (ctx: { values: Partial<T> }) => any }
+        FieldMeta & {
+          computeValue?: (ctx: { values: Partial<T> }) => any;
+          infoIconCompute?: (ctx: {
+            value: any;
+            values: Partial<T>;
+          }) => InfoIconComputedResult;
+        }
       >,
     [meta, enabledModules]
   );
@@ -130,11 +146,10 @@ export function TaskBuilder<T>({
   React.useLayoutEffect(() => {
     const el = containerRef.current;
     if (el) {
-      // Measure after layout to get natural full width
       const width = el.scrollWidth;
       setMinWidth(`${width}px`);
     }
-  }, [layout, values]); // Recalculate if layout or field sizes change
+  }, [layout, values]);
 
   const set = <K extends keyof T>(key: K, val: T[K] | undefined) =>
     onChange({ [key]: val } as Partial<T>);
@@ -159,7 +174,7 @@ export function TaskBuilder<T>({
         if (!sectionHasAnyVisibleField(sec)) return null;
         if (sec.visibleIf && !sec.visibleIf({ values })) return null;
 
-        const childrenClassName = `tw:flex tw:flex-row tw:flex-wrap`;
+        const childrenClassName = "tw:flex tw:flex-row tw:flex-wrap";
 
         return (
           <CollapsibleSection
@@ -171,7 +186,7 @@ export function TaskBuilder<T>({
           >
             {sec.rows.map((row, ri) => {
               if (row.visibleIf && !row.visibleIf({ values })) return null;
-              const grid = `tw:flex tw:flex-col tw:flex-auto`;
+              const grid = "tw:flex tw:flex-col tw:flex-auto";
 
               return (
                 <div key={ri} className={grid}>
@@ -186,11 +201,14 @@ export function TaskBuilder<T>({
                         label: key,
                       } as FieldMeta & {
                         compute?: (ctx: { values: Partial<T> }) => any;
+                        infoIconCompute?: (ctx: {
+                          value: any;
+                          values: Partial<T>;
+                        }) => InfoIconComputedResult;
                       });
 
                     const label = f.override?.label ?? mm.label ?? key;
                     const icon = f.override?.icon ?? mm.icon;
-                    const infoIcon = f.override?.infoIcon ?? mm.infoIcon;
                     const kind = f.override?.kind ?? mm.kind ?? "text";
                     const options = f.override?.options ?? mm.options;
                     const optionsLoader = mm.loadOptions;
@@ -204,18 +222,28 @@ export function TaskBuilder<T>({
                         : undefined);
                     if (!renderer) return null;
 
-                    // --- NEW: compute resolution priority ---
-                    // 1) layout-level compute (FieldRef.compute)
-                    // 2) meta-level compute (mm.compute)
-
-                    const computeFn = mm.compute
+                    // value (using meta-level compute)
+                    const computeFn = mm.computeValue;
                     const isComputed = typeof computeFn === "function";
 
                     const value = isComputed
                       ? (computeFn!({ values }) as any)
                       : (get(f.key) as any);
 
-                    const isReadOnly = f.override?.readOnly || mm.readOnly || isComputed || kind === "calculated";
+                    const isReadOnly =
+                      f.override?.readOnly ||
+                      mm.readOnly ||
+                      isComputed ||
+                      kind === "calculated";
+
+                    const computedInfoIconObj =
+                      mm.infoIconCompute?.({ value, values }) ?? undefined;
+
+                    const unifiedInfoIcon = computedInfoIconObj ?? {
+                      icon: mm.infoIcon,
+                      className: undefined,
+                      title: undefined,
+                    };
 
                     return (
                       <React.Fragment key={String(f.key)}>
@@ -224,10 +252,10 @@ export function TaskBuilder<T>({
                           keyName={f.key as keyof T}
                           label={label}
                           icon={icon}
-                          infoIcon={infoIcon}
+                          infoIconComputed={unifiedInfoIcon}
                           value={value}
                           onChange={(v: any) => {
-                            if (isComputed) return; // calculated fields don't push changes back
+                            if (isComputed) return;
                             set(f.key, v);
                           }}
                           disabled={disabled || isReadOnly}

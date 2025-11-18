@@ -20,9 +20,7 @@ export const multiColumnLayout: LayoutConfig<AllInputs> = {
           fields: [
             { key: "impact" },
             { key: "probability" },
-            {
-              key: "riskValue",
-            },
+            { key: "riskValue" },
             { key: "testSwitchNumber" },
           ],
         },

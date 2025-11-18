@@ -10,6 +10,11 @@ type Option = { value: string; label: string };
 type CommonBase = {
   id?: string;
   icon?: IconType;
+  infoIconComputed?: {
+    icon?: IconType;
+    className?: string;
+    title?: string;
+  };
   label: string;
   disabled?: boolean;
   error?: string;
@@ -88,12 +93,21 @@ function FieldRow({ children }: { children: React.ReactNode }) {
 function LabelBlock({
   id,
   icon: Icon,
+  infoIconComputed,
   label,
 }: {
   id?: string;
   icon?: IconType;
+  infoIconComputed?: {
+    icon?: IconType;
+    className?: string;
+    title?: string;
+  };
   label: string;
 }) {
+
+  const InfoIcon = infoIconComputed?.icon;  // Capitalize for JSX
+
   return (
     <label
       htmlFor={id}
@@ -106,9 +120,17 @@ function LabelBlock({
       >
         {label}
       </span>
+      {InfoIcon && (
+        <InfoIcon
+          size={18}
+          className={infoIconComputed?.className}
+          title={infoIconComputed?.title}
+        />
+      )}
     </label>
   );
 }
+
 
 function ReadOnlyText({ value }: { value: React.ReactNode }) {
   return (
@@ -266,13 +288,14 @@ function SwitchControl({
 /* ---------------- Main Component ---------------- */
 
 export default function TaskField(props: Props) {
-  const { id, icon, label, disabled, error, readOnly } = props;
+  const { id, icon, infoIconComputed, label, disabled, error, readOnly } =
+    props;
 
   // Left: label; Right: control. Keep layout consistent.
   return (
     <FieldRow>
       <div className="tw:flex tw:flex-wrap tw:items-center tw:gap-3">
-        <LabelBlock id={id} icon={icon} label={label} />
+        <LabelBlock id={id} icon={icon} infoIconComputed={infoIconComputed} label={label} />
 
         {/* Control area */}
         {props.type === "select" ? (
