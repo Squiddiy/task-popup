@@ -10,25 +10,29 @@ import { TaskSwitchMeta } from "../schemas/schemaMetas/TaskSwitch.meta";
 import { TaskSwitchSchema } from "../schemas/TaskSwitch";
 
 export const MODULES = {
-  base:        { schema: TaskBaseSchema,        meta: TaskBaseMeta },
-  categories:  { schema: TaskCategoriesSchema,  meta: TaskCategoriesMeta },
-  risk:        { schema: TaskRiskSchema,        meta: TaskRiskMeta },
-  switch:     { schema: TaskSwitchSchema,      meta: TaskSwitchMeta },
+  base: { schema: TaskBaseSchema, meta: TaskBaseMeta },
+  categories: { schema: TaskCategoriesSchema, meta: TaskCategoriesMeta },
+  risk: { schema: TaskRiskSchema, meta: TaskRiskMeta },
+  switch: { schema: TaskSwitchSchema, meta: TaskSwitchMeta },
 } as const;
 
 export type EnabledModule = keyof typeof MODULES;
 
-type SchemaMap = { [K in EnabledModule]: typeof MODULES[K]["schema"] };
+type SchemaMap = { [K in EnabledModule]: (typeof MODULES)[K]["schema"] };
 type InputOf<M extends EnabledModule> = z.input<SchemaMap[M]>;
-type UnionToIntersection<U> =
-  (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
+  k: infer I
+) => void
+  ? I
+  : never;
 
 export type InputsFromEnabled<E extends readonly EnabledModule[]> =
-  UnionToIntersection<InputOf<E[number]>> extends never ? {} : UnionToIntersection<InputOf<E[number]>>;
+  UnionToIntersection<InputOf<E[number]>> extends never
+    ? {}
+    : UnionToIntersection<InputOf<E[number]>>;
 
 export const ALL_MODULES = Object.keys(MODULES) as readonly EnabledModule[];
 import type { LayoutConfig } from "../builder/layout";
-
 
 export function composeSchema<const E extends readonly EnabledModule[]>(
   enabled: E,
@@ -57,12 +61,15 @@ export function composeSchema<const E extends readonly EnabledModule[]>(
     const usedKeys = keysFromLayout(layout);
 
     const availableKeys = new Set<string>();
-    for (const s of parts) Object.keys(s.shape).forEach((k) => availableKeys.add(k));
+    for (const s of parts)
+      Object.keys(s.shape).forEach((k) => availableKeys.add(k));
 
     // warn if layout contains keys not available in any enabled schema
     for (const k of usedKeys) {
       if (!availableKeys.has(k)) {
-        console.warn(`Layout key '${k}' not found in any enabled schema modules.`);
+        console.warn(
+          `Layout key '${k}' not found in any enabled schema modules.`
+        );
       }
     }
 
@@ -73,7 +80,9 @@ export function composeSchema<const E extends readonly EnabledModule[]>(
           Object.entries(s.shape).filter(([k]) => usedKeys.has(k))
         );
         // If module has no used keys, skip it (will be filtered out)
-        return Object.keys(filteredShape).length ? z.object(filteredShape) : null;
+        return Object.keys(filteredShape).length
+          ? z.object(filteredShape)
+          : null;
       })
       .filter(Boolean) as z.ZodObject<z.ZodRawShape>[];
   }
@@ -89,7 +98,9 @@ export function composeSchema<const E extends readonly EnabledModule[]>(
 // Optional: all modules merged
 export type AllInputs = UnionToIntersection<InputOf<EnabledModule>>;
 export const AllSchema = (function () {
-  const parts = ALL_MODULES.map((m) => MODULES[m].schema) as unknown as z.ZodObject<z.ZodRawShape>[];
+  const parts = ALL_MODULES.map(
+    (m) => MODULES[m].schema
+  ) as unknown as z.ZodObject<z.ZodRawShape>[];
   return (parts.length
     ? parts.reduce((acc, s) => acc.merge(s), z.object({})).strict()
     : z.object({})) as unknown as z.ZodType<AllInputs>;

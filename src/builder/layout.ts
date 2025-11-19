@@ -1,3 +1,5 @@
+import type { FieldKind } from "../schemas/schemaMetas/meta";
+
 // builder/layout.ts
 export type ConditionFn<T> = (ctx: { values: Partial<T> }) => boolean;
 export type ComputeFn<T, K extends keyof T> = (ctx: {
@@ -11,7 +13,7 @@ export type FieldRef<T, K extends keyof T = keyof T> = {
     placeholder?: string;
     icon?: string;
     infoIcon?: string; // NEW: right-side info icon
-    kind?: "text" | "number" | "select" | "richtext" | "date" | "checkbox";
+    kind?: FieldKind;
     options?: readonly string[];
     readOnly?: boolean;
   };
@@ -26,7 +28,8 @@ export type RowConfig<T> = {
 
 export type SectionConfig<T> = {
   id: string;
-  title: string;
+  title?: string;
+  className?: string;
   collapsible?: boolean;
   defaultOpen?: boolean;
   rows: RowConfig<T>[];

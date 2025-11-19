@@ -8,13 +8,13 @@ export const TaskRiskMeta = defineMeta(TaskRiskSchema, {
     label: "Probability",
     icon: ICON.riskFlag,
     kind: "number",
-    placeholder: "1–5",
+    placeholder: "0–5",
   },
   impact: {
     label: "Impact",
     icon: ICON.riskFlag,
     kind: "number",
-    placeholder: "1–5",
+    placeholder: "0–5",
   },
   consequence: {
     label: "Konsekvens",

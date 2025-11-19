@@ -10,14 +10,13 @@ import type {
   FieldMeta,
   InfoIconComputedResult,
 } from "../schemas/schemaMetas/meta";
-import type { IconType } from "react-icons";
 
 // ---- FieldRenderer ----
 
 type FieldRendererProps<T, K extends keyof T> = {
   renderer: Renderer<T>;
   keyName: K;
-  label: string;
+  label?: string;
   icon?: any;
   infoIconComputed?: {
     icon?: any;
@@ -31,6 +30,7 @@ type FieldRendererProps<T, K extends keyof T> = {
   placeholder?: string;
   options?: readonly string[];
   optionsLoader?: () => Promise<readonly string[]>;
+  className?: string;
 };
 
 function FieldRenderer<T, K extends keyof T>({
@@ -46,6 +46,7 @@ function FieldRenderer<T, K extends keyof T>({
   placeholder,
   options,
   optionsLoader,
+  className,
 }: FieldRendererProps<T, K>) {
   const [resolvedOptions, setResolvedOptions] = React.useState<
     readonly string[] | undefined
@@ -84,6 +85,7 @@ function FieldRenderer<T, K extends keyof T>({
     error,
     placeholder,
     options: resolvedOptions,
+    className,
   } as any);
 }
 
@@ -179,9 +181,12 @@ export function TaskBuilder<T>({
         return (
           <CollapsibleSection
             key={sec.id}
-            title={sec.title}
+            title={sec.title ?? ""}
+            collapsible={sec.collapsible}
             defaultOpen={sec.defaultOpen ?? true}
-            className="tw:border-b-gray-200 tw:border-b-2"
+            className={`tw:border-b-gray-200 ${
+              sec.collapsible ? "tw:border-b-2" : ""
+            }`}
             childrenClassName={childrenClassName}
           >
             {sec.rows.map((row, ri) => {
@@ -207,7 +212,9 @@ export function TaskBuilder<T>({
                         }) => InfoIconComputedResult;
                       });
 
-                    const label = f.override?.label ?? mm.label ?? key;
+                    const className = sec.className;
+                    console.log(className);
+                    const label = f.override?.label ?? mm.label ?? undefined;
                     const icon = f.override?.icon ?? mm.icon;
                     const kind = f.override?.kind ?? mm.kind ?? "text";
                     const options = f.override?.options ?? mm.options;
@@ -263,6 +270,7 @@ export function TaskBuilder<T>({
                           placeholder={placeholder}
                           options={options}
                           optionsLoader={optionsLoader}
+                          className={className}
                         />
                       </React.Fragment>
                     );

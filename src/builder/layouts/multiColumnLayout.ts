@@ -4,6 +4,12 @@ import { type AllInputs } from "../../composer/TaskCompose";
 export const multiColumnLayout: LayoutConfig<AllInputs> = {
   sections: [
     {
+      id: "top",
+      collapsible: false,
+      className: "tw:text-2xl tw:font-bold tw:text-gray-900",
+      rows: [{ fields: [{ key: "taskName" }] }],
+    },
+    {
       id: "main",
       title: "Main",
       collapsible: true,

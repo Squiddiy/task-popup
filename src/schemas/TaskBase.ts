@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const TASKSTATUS = ["Aktivt", "Preliminärt", "Avslutat", "Pausad", "Mall", "Inaktiv"] as const;
+export type TaskStatus = (typeof TASKSTATUS)[number];
 
 export const TaskBaseSchema = z.object({
   taskName: z.string().min(1, "Krävs"),

@@ -1,3 +1,24 @@
+export type ValueTextObj = {
+  Value: number;
+  Text: string;
+};
+export type RiskObj = {
+  ID: number;
+  Name: string;
+  Description: string;
+  DescriptionFormat: string;
+  Action: string;
+  Probability: number;
+  Impact: number;
+  Priority: number;
+  Position: number;
+  ProjectId: number;
+  ParentId: number;
+  TaskManager: number;
+  Status: number;
+  Categories: number[];
+};
+
 export async function getRiskById(taskId: number) {
   const resp = await fetch(`/api/RiskService/GetRiskById?taskId=${taskId}`, {
     method: "GET",
@@ -19,10 +40,6 @@ export async function getRiskById(taskId: number) {
   return JSON.parse(bodyText);
 }
 
-type ValueTextObj = {
-  Value: number;
-  Text: string;
-};
 
 async function fetchUserNames(): Promise<ValueTextObj[]> {
   const resp = await fetch(`/api/RiskService/GetUserNames`, {
@@ -51,5 +68,30 @@ export async function getUserNames() {
 export async function getUserNamesAsStringList() {
   const values = await fetchUserNames();
   return values.map((x) => x.Text);
+}
+
+
+export async function saveRisk(risk: RiskObj): Promise<RiskObj> {
+  const resp = await fetch(`/api/RiskService/SaveRisk`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify(risk),
+  });
+
+  const ct = resp.headers.get("content-type") || "";
+  const bodyText = await resp.text();
+
+  if (!resp.ok || !ct.includes("application/json")) {
+    throw new Error(
+      `SaveRisk failed: ${resp.status} ${resp.statusText}\n` +
+        `URL: ${resp.url}\n` +
+        `Body: ${bodyText.slice(0, 300)}`
+    );
+  }
+
+  return JSON.parse(bodyText) as RiskObj;
 }
 

@@ -15,14 +15,12 @@ type CommonBase = {
     className?: string;
     title?: string;
   };
-  label: string;
+  label?: string;
   disabled?: boolean;
   error?: string;
   readOnly?: boolean;
   placeholder?: string;
-  min?: number;
-  max?: number;
-  step?: number;
+  className?: string;
 };
 
 type TextProps = CommonBase & {
@@ -37,6 +35,9 @@ type NumberProps = CommonBase & {
   value: number | "" | undefined;
   onChange: (v: number | "") => void;
   options?: never;
+  min?: number;
+  max?: number;
+  step?: number;
 };
 
 type SelectProps = CommonBase & {
@@ -105,21 +106,23 @@ function LabelBlock({
   };
   label: string;
 }) {
-
-  const InfoIcon = infoIconComputed?.icon;  // Capitalize for JSX
+  const InfoIcon = infoIconComputed?.icon; // Capitalize for JSX
 
   return (
     <label
       htmlFor={id}
-      className="tw:flex tw:items-center tw:gap-2 tw:w-28 tw:whitespace-nowrap tw:text-gray-700"
+      className={`tw:flex tw:items-center ${label != "" ? "tw:gap-2 tw:w-28": ""} tw:whitespace-nowrap tw:text-gray-700`}
     >
       {Icon && <Icon size={18} />}
-      <span
-        className="tw:font-medium tw:min-w-1/2 tw:overflow-hidden tw:text-ellipsis"
-        title={label}
-      >
-        {label}
-      </span>
+
+      {label != "" && (
+        <span
+          className="tw:font-medium tw:min-w-1/2 tw:overflow-hidden tw:text-ellipsis"
+          title={label}
+        >
+          {label}
+        </span>
+      )}
       {InfoIcon && (
         <InfoIcon
           size={18}
@@ -130,7 +133,6 @@ function LabelBlock({
     </label>
   );
 }
-
 
 function ReadOnlyText({ value }: { value: React.ReactNode }) {
   return (
@@ -151,7 +153,13 @@ function TextInput({
   onChange,
   placeholder,
   disabled,
-}: Pick<TextProps, "id" | "value" | "onChange" | "placeholder" | "disabled">) {
+  className,
+}: Pick<
+  TextProps,
+  "id" | "value" | "onChange" | "placeholder" | "disabled" | "className"
+>) {
+  console.log(value);
+  console.log(className);
   return (
     <input
       id={id}
@@ -161,7 +169,7 @@ function TextInput({
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       disabled={disabled}
-      className={fieldInputClasses}
+      className={fieldInputClasses + " " + className}
     />
   );
 }
@@ -175,6 +183,7 @@ function NumberInput({
   step,
   placeholder,
   disabled,
+  className,
 }: Pick<
   NumberProps,
   | "id"
@@ -185,6 +194,7 @@ function NumberInput({
   | "step"
   | "placeholder"
   | "disabled"
+  | "className"
 >) {
   return (
     <input
@@ -200,7 +210,7 @@ function NumberInput({
       step={step}
       placeholder={placeholder}
       disabled={disabled}
-      className={fieldInputClasses}
+      className={fieldInputClasses + " " + className}
     />
   );
 }
@@ -288,14 +298,27 @@ function SwitchControl({
 /* ---------------- Main Component ---------------- */
 
 export default function TaskField(props: Props) {
-  const { id, icon, infoIconComputed, label, disabled, error, readOnly } =
-    props;
+  const {
+    id,
+    icon,
+    infoIconComputed,
+    label,
+    disabled,
+    error,
+    readOnly,
+    className,
+  } = props;
 
   // Left: label; Right: control. Keep layout consistent.
   return (
     <FieldRow>
       <div className="tw:flex tw:flex-wrap tw:items-center tw:gap-3">
-        <LabelBlock id={id} icon={icon} infoIconComputed={infoIconComputed} label={label} />
+        <LabelBlock
+          id={id}
+          icon={icon}
+          infoIconComputed={infoIconComputed}
+          label={label ?? ""}
+        />
 
         {/* Control area */}
         {props.type === "select" ? (
@@ -316,7 +339,7 @@ export default function TaskField(props: Props) {
           ) : (
             <SwitchControl
               id={id}
-              label={label}
+              label={label ?? ""}
               value={!!props.value}
               onChange={props.onChange}
               disabled={disabled}
@@ -335,6 +358,7 @@ export default function TaskField(props: Props) {
               step={props.step}
               placeholder={props.placeholder}
               disabled={disabled}
+              className={className}
             />
           )
         ) : // type === "text"
@@ -347,6 +371,7 @@ export default function TaskField(props: Props) {
             onChange={props.onChange}
             placeholder={props.placeholder}
             disabled={disabled}
+            className={className}
           />
         )}
       </div>

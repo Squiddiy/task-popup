@@ -33,6 +33,7 @@ export type RendererProps<T, K extends keyof T> = {
   placeholder?: string;
   options?: readonly string[];
   optionsLoader?: () => Promise<readonly string[]>;
+  className?: string;
 };
 
 export type Renderer<T> = <K extends keyof T>(
@@ -49,8 +50,16 @@ export function defaultRegistry<T>(): Registry<T> {
   return {
     byKind: {
       text: <K extends keyof T>(p: RendererProps<T, K>) => {
-        const { label, value, onChange, disabled, error, placeholder, icon } =
-          p;
+        const {
+          label,
+          value,
+          onChange,
+          disabled,
+          error,
+          placeholder,
+          icon,
+          className,
+        } = p;
         return (
           <TaskField
             icon={resolveIcon(icon)}
@@ -61,6 +70,7 @@ export function defaultRegistry<T>(): Registry<T> {
             placeholder={placeholder}
             disabled={disabled}
             error={error}
+            className={className}
           />
         );
       },
@@ -74,6 +84,7 @@ export function defaultRegistry<T>(): Registry<T> {
           placeholder,
           icon,
           infoIconComputed,
+          className,
         } = p;
         return (
           <TaskField
@@ -88,11 +99,21 @@ export function defaultRegistry<T>(): Registry<T> {
             disabled={disabled}
             error={error}
             placeholder={placeholder}
+            className={className}
           />
         );
       },
       select: <K extends keyof T>(p: RendererProps<T, K>) => {
-        const { label, value, onChange, disabled, error, options, icon } = p;
+        const {
+          label,
+          value,
+          onChange,
+          disabled,
+          error,
+          options,
+          icon,
+          className,
+        } = p;
         return (
           <TaskField
             icon={resolveIcon(icon)}
@@ -105,6 +126,7 @@ export function defaultRegistry<T>(): Registry<T> {
             options={(options ?? []).map((s) => ({ value: s, label: s }))}
             disabled={disabled}
             error={error}
+            className={className}
           />
         );
       },
@@ -124,7 +146,7 @@ export function defaultRegistry<T>(): Registry<T> {
         );
       },
       switch: <K extends keyof T>(p: RendererProps<T, K>) => {
-        const { label, value, onChange, disabled, error, icon } = p;
+        const { label, value, onChange, disabled, error, icon, className } = p;
         return (
           <TaskField
             icon={resolveIcon(icon)}
@@ -136,11 +158,20 @@ export function defaultRegistry<T>(): Registry<T> {
             }
             disabled={disabled}
             error={error}
+            className={className}
           />
         );
       },
       calculated: <K extends keyof T>(p: RendererProps<T, K>) => {
-        const { label, value, icon, infoIconComputed, error, placeholder } = p;
+        const {
+          label,
+          value,
+          icon,
+          infoIconComputed,
+          error,
+          placeholder,
+          className,
+        } = p;
         return (
           <TaskField
             icon={resolveIcon(icon)}
@@ -156,6 +187,7 @@ export function defaultRegistry<T>(): Registry<T> {
             error={error}
             placeholder={placeholder}
             step={1}
+            className={className}
           />
         );
       },

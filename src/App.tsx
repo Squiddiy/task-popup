@@ -16,15 +16,18 @@ import { BreadcrumbPath } from "./components/atoms/HeaderPath";
 import type { PathItem } from "./components/atoms/HeaderPath";
 import type { OnChangeFn } from "./components/organism/TaskWrapper";
 
-import {TASKSTATUS} from "./schemas/TaskBase"
+import { TASKSTATUS, type TaskStatus } from "./schemas/TaskBase";
 
 import { TaskBuilder } from "./builder/taskbuilder";
 import type { LayoutConfig } from "./builder/layout";
+import { useQueryClient } from "@tanstack/react-query";
 import {
-  QueryClient,
-  useQueryClient,
-} from "@tanstack/react-query";
-import { getRiskById, getUserNames } from "./services/api/apiService";
+  getRiskById,
+  getUserNames,
+  saveRisk,
+  type RiskObj,
+  type ValueTextObj,
+} from "./services/api/apiService";
 
 /**
  * Plain DOM mount (no ShadowRoot).
@@ -82,16 +85,14 @@ function openTask<
   } = opts;
 
   const enabledModules = (enabled ?? (["base"] as const)) as E;
-
-  const Schema = composeSchema(
-    enabledModules,
-    layout ?? undefined
-  ) as S extends z.ZodTypeAny ? S : z.ZodType<InputsFromEnabled<E>>;
-
   type TValues = S extends z.ZodTypeAny ? z.input<S> : InputsFromEnabled<E>;
 
-  // If no fields are enabled, provide an empty layout to avoid errors
-  const emptyLayout: LayoutConfig<AllInputs> = { sections: [] };
+  const Schema: z.ZodType<TValues> = composeSchema(
+    enabledModules,
+    layout ?? undefined
+  ) as z.ZodType<TValues>;
+
+  const emptyLayout: LayoutConfig<TValues> = { sections: [] };
 
   const defaultRender = ({
     values,
@@ -166,43 +167,61 @@ function openTask<
     );
   });
 }
-type ValueTextObj = {
-  Value: number;
-  Text: string;
-};
-type RiskObj = {
-  ID: number;
-  Name: string;
-  Description: string;
-  DescriptionFormat: string;
-  Action: string;
-  Probability: ValueTextObj;
-  Impact: ValueTextObj;
-  Priority: number;
-  Position: number;
-  ProjectId: number;
-  ParentId: number;
-  TaskManager: number;
-  Status: number;
-  Categories: number[];
-}
 
+type TaskFormResult = {
+  taskName: string;
+  rootCause: string;
+  taskManager: string;
+  taskStatus: TaskStatus;
+  description?: string;
+  impact: number;
+  probability: number;
+  priority?: number;
+  testSwitchNumber?: boolean; // if you don't use it for backend, just ignore
+};
+
+function mapFormToRisk(
+  old: RiskObj,
+  form: TaskFormResult,
+  names: ValueTextObj[]
+): RiskObj {
+  const taskManagerId =
+    names.find((n) => n.Text === form.taskManager)?.Value ?? old.TaskManager;
+
+  const statusIndex = TASKSTATUS.indexOf(form.taskStatus);
+  const status = statusIndex >= 0 ? statusIndex + 1 : old.Status;
+
+  return {
+    ...old,
+    Name: form.taskName ?? old.Name,
+    Action: form.rootCause ?? old.Action,
+    DescriptionFormat: form.description ?? old.DescriptionFormat,
+    Impact: form.impact ?? old.Impact,
+    Probability: form.probability ?? old.Probability,
+    Priority: form.priority ?? old.Priority,
+    TaskManager: taskManagerId,
+    Status: status,
+    // ID, Name, ProjectId, ParentId, Categories etc. stay from `old`
+  };
+}
 
 function App() {
   const queryClient = useQueryClient();
 
   const handleOpen = async () => {
-    // fetch (or reuse cached) data before opening
-    const risk : RiskObj = await queryClient.fetchQuery({
-      queryKey: ["riskById", 545939],
-      queryFn: () => getRiskById(545939),
-    });
+    const riskId = 545939;
 
-    const names : ValueTextObj[] = await queryClient.fetchQuery({
+    const cachedRisk = queryClient.getQueryData<RiskObj>(["riskById", riskId]);
+    const risk: RiskObj =
+      cachedRisk ??
+      (await queryClient.fetchQuery({
+        queryKey: ["riskById", riskId],
+        queryFn: () => getRiskById(riskId),
+      }));
+    const names: ValueTextObj[] = await queryClient.fetchQuery({
       queryKey: ["getNames"],
       queryFn: () => getUserNames(),
     });
-
 
     console.log(risk);
     console.log(names);
@@ -213,12 +232,14 @@ function App() {
       enabled: ["base", "risk", "switch"],
       layout: multiColumnLayout,
       initialData: {
+        taskName: risk.Name,
         rootCause: risk.Action,
-        taskManager: names.find(x=>x.Value == risk.TaskManager)?.Text ?? "",
+        taskManager: names.find((x) => x.Value == risk.TaskManager)?.Text ?? "",
         taskStatus: TASKSTATUS[risk.Status - 1],
         description: risk.DescriptionFormat,
-        impact: risk.Impact.Value,
-        probability: risk.Probability.Value,
+        impact: risk.Impact,
+        priority: risk.Priority,
+        probability: risk.Probability,
         testSwitchNumber: true,
       },
       titlePath: [
@@ -228,9 +249,22 @@ function App() {
           onClick: () => console.log("Clicked Riskhantering"),
         },
       ],
-    }).then((result) => {
+    }).then(async (result) => {
       if (result) {
-        console.log("✅ Task saved:", result);
+        console.log(result);
+        const payload = mapFormToRisk(risk, result as TaskFormResult, names);
+
+        try {
+          const saved = await saveRisk(payload);
+
+          console.log(saved);
+          queryClient.setQueryData<RiskObj>(["riskById", saved.ID], saved);
+
+          console.log("✅ Risk saved to API:", saved);
+        } catch (err) {
+          console.error("❌ Failed to save risk:", err);
+          // TODO: show toast / UI error
+        }
       } else {
         console.log("❌ Task cancelled");
       }

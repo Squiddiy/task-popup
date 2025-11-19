@@ -45,8 +45,6 @@ export function TaskWrapper<T>({
   onSubmit,
   onCancel,
   schema,
-  title,
-  taskType,
   container,
   pathNode,
   render,
@@ -101,16 +99,6 @@ export function TaskWrapper<T>({
       container={container}
     >
       <Popup.Body>
-        <div>
-          {taskType === "Risk" && (
-            <FaExclamationTriangle
-              size={40}
-              className="tw:inline-block tw:align-text-bottom tw:mr-4"
-            ></FaExclamationTriangle>
-          )}
-          <h1 className="tw:inline-block tw:text-xl tw:font-bold">{title}</h1>
-        </div>
-
         {render({
           values: data,
           onChange: handleChange,
