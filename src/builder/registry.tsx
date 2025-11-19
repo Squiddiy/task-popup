@@ -21,6 +21,7 @@ export type RendererProps<T, K extends keyof T> = {
   keyName: K;
   label: string;
   icon?: string | IconType; // 👈 allow string or component
+  iconSize: number;
   infoIconComputed?: {
     icon?: any;
     className?: string;
@@ -58,11 +59,13 @@ export function defaultRegistry<T>(): Registry<T> {
           error,
           placeholder,
           icon,
+          iconSize,
           className,
         } = p;
         return (
           <TaskField
             icon={resolveIcon(icon)}
+            iconSize={iconSize}
             label={label}
             type="text"
             value={value as unknown as string | undefined}
@@ -83,12 +86,14 @@ export function defaultRegistry<T>(): Registry<T> {
           error,
           placeholder,
           icon,
+          iconSize,
           infoIconComputed,
           className,
         } = p;
         return (
           <TaskField
             icon={resolveIcon(icon)}
+            iconSize={iconSize}
             label={label}
             type="number"
             value={value as unknown as number | undefined}
@@ -112,11 +117,13 @@ export function defaultRegistry<T>(): Registry<T> {
           error,
           options,
           icon,
+          iconSize,
           className,
         } = p;
         return (
           <TaskField
             icon={resolveIcon(icon)}
+            iconSize={iconSize}
             label={label}
             type="select"
             value={value as unknown as string | number | undefined}
@@ -146,10 +153,11 @@ export function defaultRegistry<T>(): Registry<T> {
         );
       },
       switch: <K extends keyof T>(p: RendererProps<T, K>) => {
-        const { label, value, onChange, disabled, error, icon, className } = p;
+        const { label, value, onChange, disabled, error, icon,iconSize, className } = p;
         return (
           <TaskField
             icon={resolveIcon(icon)}
+            iconSize={iconSize}
             label={label}
             type="switch"
             value={value as unknown as boolean}
@@ -167,6 +175,7 @@ export function defaultRegistry<T>(): Registry<T> {
           label,
           value,
           icon,
+          iconSize,
           infoIconComputed,
           error,
           placeholder,
@@ -175,6 +184,7 @@ export function defaultRegistry<T>(): Registry<T> {
         return (
           <TaskField
             icon={resolveIcon(icon)}
+            iconSize={iconSize}
             infoIconComputed={infoIconComputed}
             label={label}
             type="number"

@@ -18,6 +18,7 @@ type FieldRendererProps<T, K extends keyof T> = {
   keyName: K;
   label?: string;
   icon?: any;
+  iconSize?: number;
   infoIconComputed?: {
     icon?: any;
     className?: string;
@@ -38,6 +39,7 @@ function FieldRenderer<T, K extends keyof T>({
   keyName,
   label,
   icon,
+  iconSize,
   infoIconComputed,
   value,
   onChange,
@@ -78,6 +80,7 @@ function FieldRenderer<T, K extends keyof T>({
     keyName,
     label,
     icon,
+    iconSize,
     infoIconComputed,
     value,
     onChange,
@@ -218,6 +221,8 @@ export function TaskBuilder<T>({
                     const icon = f.override?.icon ?? mm.icon;
                     const kind = f.override?.kind ?? mm.kind ?? "text";
                     const options = f.override?.options ?? mm.options;
+                    //Default size 18 idk?
+                    const iconSize = mm.iconSize ?? 18;
                     const optionsLoader = mm.loadOptions;
                     const placeholder =
                       f.override?.placeholder ?? mm.placeholder;
@@ -259,6 +264,7 @@ export function TaskBuilder<T>({
                           keyName={f.key as keyof T}
                           label={label}
                           icon={icon}
+                          iconSize={iconSize}
                           infoIconComputed={unifiedInfoIcon}
                           value={value}
                           onChange={(v: any) => {

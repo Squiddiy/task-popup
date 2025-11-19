@@ -10,6 +10,7 @@ type Option = { value: string; label: string };
 type CommonBase = {
   id?: string;
   icon?: IconType;
+  iconSize: number;
   infoIconComputed?: {
     icon?: IconType;
     className?: string;
@@ -94,11 +95,13 @@ function FieldRow({ children }: { children: React.ReactNode }) {
 function LabelBlock({
   id,
   icon: Icon,
+  iconSize,
   infoIconComputed,
   label,
 }: {
   id?: string;
   icon?: IconType;
+  iconSize: number;
   infoIconComputed?: {
     icon?: IconType;
     className?: string;
@@ -111,9 +114,11 @@ function LabelBlock({
   return (
     <label
       htmlFor={id}
-      className={`tw:flex tw:items-center ${label != "" ? "tw:gap-2 tw:w-28": ""} tw:whitespace-nowrap tw:text-gray-700`}
+      className={`tw:flex tw:items-center ${
+        label != "" ? "tw:gap-2 tw:w-28" : ""
+      } tw:whitespace-nowrap tw:text-gray-700`}
     >
-      {Icon && <Icon size={18} />}
+      {Icon && <Icon size={iconSize} />}
 
       {label != "" && (
         <span
@@ -301,6 +306,7 @@ export default function TaskField(props: Props) {
   const {
     id,
     icon,
+    iconSize,
     infoIconComputed,
     label,
     disabled,
@@ -309,6 +315,7 @@ export default function TaskField(props: Props) {
     className,
   } = props;
 
+  console.log(iconSize);
   // Left: label; Right: control. Keep layout consistent.
   return (
     <FieldRow>
@@ -316,6 +323,7 @@ export default function TaskField(props: Props) {
         <LabelBlock
           id={id}
           icon={icon}
+          iconSize={iconSize}
           infoIconComputed={infoIconComputed}
           label={label ?? ""}
         />

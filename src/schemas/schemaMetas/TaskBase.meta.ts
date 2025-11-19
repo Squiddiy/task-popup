@@ -8,6 +8,7 @@ import { getUserNamesAsStringList } from "../../services/api/apiService";
 export const TaskBaseMeta = defineMeta(TaskBaseSchema, {
   taskName: {
     icon: ICON.warning,
+    iconSize: 40,
     kind: "text",
     placeholder: "Enter task name…",
   },

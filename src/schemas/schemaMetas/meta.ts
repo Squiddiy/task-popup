@@ -19,6 +19,7 @@ export type InfoIconComputedResult = {
 export type FieldMeta = {
   label?: string;
   icon?: string | IconType;
+  iconSize?: number;
   infoIcon?: string | IconType;    // static icon fallback
   placeholder?: string;
   kind?: FieldKind;
