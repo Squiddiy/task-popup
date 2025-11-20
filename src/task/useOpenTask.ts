@@ -1,9 +1,9 @@
 // useOpenRiskTask.ts
 import { useQueryClient } from "@tanstack/react-query";
-import { multiColumnLayout } from "./builder/layouts/multiColumnLayout";
+import { multiColumnLayout } from "../builder/layouts/multiColumnLayout";
 import React from "react";
-import { TASKSTATUS, type TaskStatus } from "./schemas/TaskBase";
-import { getRiskById, getUserNames, saveRisk, type RiskObj, type ValueTextObj } from "./services/api/apiService";
+import { TASKSTATUS, type TaskStatus } from "../schemas/TaskBase";
+import { getRiskById, getUserNames, saveRisk, type RiskObj, type ValueTextObj } from "../services/api/apiService";
 import { openTask } from "./openTask";
 
 type TaskFormResult = {

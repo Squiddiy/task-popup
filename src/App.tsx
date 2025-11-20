@@ -1,4 +1,4 @@
-import { useOpenRiskTask } from "./useOpenTask";
+import { useOpenRiskTask } from "./task/useOpenTask";
 
 function App() {
   const openRisk = useOpenRiskTask(545939);

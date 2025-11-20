@@ -3,7 +3,7 @@ import { z } from "zod";
 import Popup from "./Popup";
 import ConfirmButtonSet from "../molecules/ConfirmButtonSet";
 import { FaExclamationTriangle } from "react-icons/fa";
-import type { TaskType } from "../../openTask";
+import type { TaskType } from "../../task/openTask";
 
 export type OnChangeFn<T> = (
   patch: Partial<T> | ((prev: T) => Partial<T>),

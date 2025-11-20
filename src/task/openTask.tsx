@@ -8,16 +8,16 @@ import {
   type AllInputs,
   type EnabledModule,
   type InputsFromEnabled,
-} from "./composer/TaskCompose";
+} from "../composer/TaskCompose";
 
-import { TaskWrapper } from "./components/organism/TaskWrapper";
-import { BreadcrumbPath } from "./components/atoms/HeaderPath";
+import { TaskWrapper } from "../components/organism/TaskWrapper";
+import { BreadcrumbPath } from "../components/atoms/HeaderPath";
 
-import type { PathItem } from "./components/atoms/HeaderPath";
-import type { OnChangeFn } from "./components/organism/TaskWrapper";
+import type { PathItem } from "../components/atoms/HeaderPath";
+import type { OnChangeFn } from "../components/organism/TaskWrapper";
 
-import { TaskBuilder } from "./builder/taskbuilder";
-import type { LayoutConfig } from "./builder/layout";
+import { TaskBuilder } from "../builder/taskbuilder";
+import type { LayoutConfig } from "../builder/layout";
 
 function createMountNode(): { rootEl: HTMLElement; cleanup: () => void } {
   const container = document.createElement("div");
