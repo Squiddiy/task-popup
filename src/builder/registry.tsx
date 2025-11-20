@@ -16,6 +16,30 @@ function resolveIcon(icon?: string | IconType): IconType | undefined {
   if (typeof icon === "string") return ICON_MAP[icon];
   return icon;
 }
+function toCommonTaskFieldProps<T, K extends keyof T>(p: RendererProps<T, K>) {
+  const {
+    label,
+    icon,
+    iconSize,
+    infoIconComputed,
+    disabled,
+    error,
+    placeholder,
+    className,
+  } = p;
+
+  return {
+    label,
+    icon: resolveIcon(icon),
+    iconSize,
+    infoIconComputed,
+    disabled,
+    error,
+    placeholder,
+    className,
+  };
+}
+
 
 export type RendererProps<T, K extends keyof T> = {
   keyName: K;
@@ -48,97 +72,56 @@ export type Registry<T> = {
 };
 
 export function defaultRegistry<T>(): Registry<T> {
+
   return {
     byKind: {
       text: <K extends keyof T>(p: RendererProps<T, K>) => {
-        const {
-          label,
-          value,
-          onChange,
-          disabled,
-          error,
-          placeholder,
-          icon,
-          iconSize,
-          className,
-        } = p;
+        const { value, onChange } = p;
+        const common = toCommonTaskFieldProps(p);
+
         return (
           <TaskField
-            icon={resolveIcon(icon)}
-            iconSize={iconSize}
-            label={label}
+            {...common}
             type="text"
             value={value as unknown as string | undefined}
             onChange={(v: string) => onChange(v as unknown as T[K] | undefined)}
-            placeholder={placeholder}
-            disabled={disabled}
-            error={error}
-            className={className}
           />
         );
       },
       number: <K extends keyof T>(p: RendererProps<T, K>) => {
-        const {
-          label,
-          value,
-          onChange,
-          disabled,
-          error,
-          placeholder,
-          icon,
-          iconSize,
-          infoIconComputed,
-          className,
-        } = p;
+        const { value, onChange } = p;
+        const common = toCommonTaskFieldProps(p);
+
         return (
           <TaskField
-            icon={resolveIcon(icon)}
-            iconSize={iconSize}
-            label={label}
+            {...common}
             type="number"
             value={value as unknown as number | undefined}
             onChange={(v: number | "") =>
               onChange(v as unknown as T[K] | undefined)
             }
             step={1}
-            disabled={disabled}
-            error={error}
-            placeholder={placeholder}
-            className={className}
           />
         );
       },
       select: <K extends keyof T>(p: RendererProps<T, K>) => {
-        const {
-          label,
-          value,
-          onChange,
-          disabled,
-          error,
-          options,
-          icon,
-          iconSize,
-          className,
-        } = p;
+        const { value, onChange, options } = p;
+        const common = toCommonTaskFieldProps(p);
+
         return (
           <TaskField
-            icon={resolveIcon(icon)}
-            iconSize={iconSize}
-            label={label}
+            {...common}
             type="select"
             value={value as unknown as string | number | undefined}
             onChange={(v: string | number) =>
               onChange(v as unknown as T[K] | undefined)
             }
             options={(options ?? []).map((s) => ({ value: s, label: s }))}
-            disabled={disabled}
-            error={error}
-            className={className}
           />
         );
       },
       richtext: <K extends keyof T>(p: RendererProps<T, K>) => {
-        const { label, value, onChange, disabled, error } = p;
+        const { value, onChange, disabled, error } = p;
         return (
           <div>
             <QuillWrapper
@@ -153,51 +136,35 @@ export function defaultRegistry<T>(): Registry<T> {
         );
       },
       switch: <K extends keyof T>(p: RendererProps<T, K>) => {
-        const { label, value, onChange, disabled, error, icon,iconSize, className } = p;
+        const { value, onChange } = p;
+        const common = toCommonTaskFieldProps(p);
+
         return (
           <TaskField
-            icon={resolveIcon(icon)}
-            iconSize={iconSize}
-            label={label}
+            {...common}
             type="switch"
             value={value as unknown as boolean}
             onChange={(v: boolean) =>
               onChange(v as unknown as T[K] | undefined)
             }
-            disabled={disabled}
-            error={error}
-            className={className}
           />
         );
       },
       calculated: <K extends keyof T>(p: RendererProps<T, K>) => {
-        const {
-          label,
-          value,
-          icon,
-          iconSize,
-          infoIconComputed,
-          error,
-          placeholder,
-          className,
-        } = p;
+        const { value } = p;
+        const common = toCommonTaskFieldProps(p);
+
         return (
           <TaskField
-            icon={resolveIcon(icon)}
-            iconSize={iconSize}
-            infoIconComputed={infoIconComputed}
-            label={label}
+            {...common}
             type="number"
-            value={(value as unknown as number) ?? ""} // show empty when NaN/undefined
+            value={(value as unknown as number) ?? ""}
             onChange={() => {
-              /* no-op: read-only */
+              /* no-op, read-only */
             }}
             readOnly={true}
             disabled={true}
-            error={error}
-            placeholder={placeholder}
             step={1}
-            className={className}
           />
         );
       },

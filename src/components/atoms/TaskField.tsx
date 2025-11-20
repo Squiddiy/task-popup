@@ -115,7 +115,7 @@ function LabelBlock({
     <label
       htmlFor={id}
       className={`tw:flex tw:items-center ${
-        label != "" ? "tw:gap-2 tw:w-28" : ""
+        label != "" ? "tw:gap-2 tw:w-32" : ""
       } tw:whitespace-nowrap tw:text-gray-700`}
     >
       {Icon && <Icon size={iconSize} />}
