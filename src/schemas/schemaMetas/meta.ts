@@ -1,30 +1,52 @@
-// ui/fieldMetaTypes.ts
+// ui/fieldMetaTypes.ts (or wherever your meta types live)
 import { z } from "zod";
 import type { IconType } from "react-icons";
 
-export type FieldKind = "text" | "number" | "select" | "richtext" | "switch";
+export type FieldKind =
+  | "text"
+  | "number"
+  | "select"
+  | "richtext"
+  | "switch"
+  | "calculated";
+
+export type InfoIconComputedResult = {
+  icon?: string | IconType;
+  className?: string;
+  title?: string;     // tooltip
+};
 
 export type FieldMeta = {
-  label: string;
-  icon?: string | IconType; // string resolved via ICON_MAP
+  label?: string;
+  icon?: string | IconType;
+  iconSize?: number;
+  infoIcon?: string | IconType;    // static icon fallback
   placeholder?: string;
   kind?: FieldKind;
-  options?: readonly string[]; // for selects
+  options?: readonly string[];
+  loadOptions?: () => Promise<readonly string[]>;
   readOnly?: boolean;
+
+  // NEW: dynamic info icon generator
+  infoIconCompute?: (ctx: {
+    value: any;
+    values: Partial<any>;
+  }) => InfoIconComputedResult | undefined;
 };
 
-// A module-level meta object: keys must match the schema’s keys
-export type ModuleFieldMeta<TKeys extends string> = {
-  [K in TKeys]?: FieldMeta;
+export type MetaForSchema<S extends z.ZodType> = {
+  [K in keyof z.input<S>]?: FieldMeta & {
+    computeValue?: (ctx: { values: Partial<z.input<S>> }) => z.input<S>[K];
+
+    // ✔ single object returned
+    infoIconCompute?: (ctx: {
+      value: z.input<S>[K] | undefined;
+      values: Partial<z.input<S>>;
+    }) => InfoIconComputedResult | undefined;
+  };
 };
 
-// Meta mapped to a schema's input keys (partial: you don't need every key)
-export type MetaForSchema<S extends z.ZodTypeAny> = Partial<
-  Record<keyof z.input<S>, FieldMeta>
->;
-
-// Accept a schema and a meta map; get full key safety + autocomplete
-export function defineMeta<S extends z.ZodTypeAny>(
+export function defineMeta<S extends z.ZodType>(
   _schema: S,
   meta: MetaForSchema<S>
 ): MetaForSchema<S> {

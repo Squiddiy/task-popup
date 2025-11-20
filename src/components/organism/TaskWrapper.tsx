@@ -2,8 +2,7 @@ import React from "react";
 import { z } from "zod";
 import Popup from "./Popup";
 import ConfirmButtonSet from "../molecules/ConfirmButtonSet";
-import { FaExclamationTriangle } from "react-icons/fa";
-import type { TaskType } from "../../App";
+import type { TaskType } from "../../task/openTask";
 
 export type OnChangeFn<T> = (
   patch: Partial<T> | ((prev: T) => Partial<T>),
@@ -45,8 +44,6 @@ export function TaskWrapper<T>({
   onSubmit,
   onCancel,
   schema,
-  title,
-  taskType,
   container,
   pathNode,
   render,
@@ -58,6 +55,7 @@ export function TaskWrapper<T>({
   );
 
   const validateAll = (formData: T) => {
+    console.log(schema);
     const result = schema.safeParse(formData);
     console.log(result);
     if (result.success) {
@@ -82,6 +80,7 @@ export function TaskWrapper<T>({
   };
 
   const handleSubmit = () => {
+    console.log(data);
     const res = validateAll(data);
     if (!res.ok) {
       setIsValid(false);
@@ -99,16 +98,6 @@ export function TaskWrapper<T>({
       container={container}
     >
       <Popup.Body>
-        <div>
-          {taskType === "Risk" && (
-            <FaExclamationTriangle
-              size={40}
-              className="tw:inline-block tw:align-text-bottom tw:mr-4"
-            ></FaExclamationTriangle>
-          )}
-          <h1 className="tw:inline-block tw:text-xl tw:font-bold">{title}</h1>
-        </div>
-
         {render({
           values: data,
           onChange: handleChange,

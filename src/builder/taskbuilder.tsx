@@ -3,10 +3,95 @@ import React from "react";
 import { z } from "zod";
 import CollapsibleSection from "../components/atoms/CollapsibleSection";
 import type { EnabledModule } from "../composer/TaskCompose";
-import { composeMeta } from "../composer/composeMeta"; // your composeMeta that merges module metas
-import { defaultRegistry, type Registry } from "./registry";
-import type { LayoutConfig, RowConfig } from "./layout";
-import type { FieldMeta } from "../schemas/schemaMetas/meta"; // { label, icon, placeholder, kind, options, ... }
+import { composeMeta } from "../composer/composeMeta";
+import { defaultRegistry, type Registry, type Renderer } from "./registry";
+import type { LayoutConfig } from "./layout";
+import type {
+  FieldMeta,
+  InfoIconComputedResult,
+} from "../schemas/schemaMetas/meta";
+
+// ---- FieldRenderer ----
+
+type FieldRendererProps<T, K extends keyof T> = {
+  renderer: Renderer<T>;
+  keyName: K;
+  label?: string;
+  icon?: any;
+  iconSize?: number;
+  infoIconComputed?: {
+    icon?: any;
+    className?: string;
+    title?: string;
+  };
+  value: T[K] | undefined;
+  onChange: (v: T[K] | undefined) => void;
+  disabled?: boolean;
+  error?: string;
+  placeholder?: string;
+  options?: readonly string[];
+  optionsLoader?: () => Promise<readonly string[]>;
+  className?: string;
+};
+
+function FieldRenderer<T, K extends keyof T>({
+  renderer,
+  keyName,
+  label,
+  icon,
+  iconSize,
+  infoIconComputed,
+  value,
+  onChange,
+  disabled,
+  error,
+  placeholder,
+  options,
+  optionsLoader,
+  className,
+}: FieldRendererProps<T, K>) {
+  const [resolvedOptions, setResolvedOptions] = React.useState<
+    readonly string[] | undefined
+  >(options);
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    if (options && options.length > 0) {
+      setResolvedOptions(options);
+      return;
+    }
+    if (!optionsLoader) return;
+
+    optionsLoader()
+      .then((opts) => {
+        if (!cancelled) setResolvedOptions(opts);
+      })
+      .catch((err) => {
+        console.error("Failed to load options for field", label, err);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [options, optionsLoader, label]);
+
+  return renderer({
+    keyName,
+    label,
+    icon,
+    iconSize,
+    infoIconComputed,
+    value,
+    onChange,
+    disabled,
+    error,
+    placeholder,
+    options: resolvedOptions,
+    className,
+  } as any);
+}
+// ---- TaskBuilder ----
 
 type Props<T> = {
   schema: z.ZodType<T>;
@@ -16,39 +101,18 @@ type Props<T> = {
   errors?: Partial<Record<keyof T, string>>;
   disabled?: boolean;
   registry?: Registry<T>;
-
-  meta?: Record<string, FieldMeta>;
+  meta?: Record<
+    string,
+    FieldMeta & {
+      compute?: (ctx: { values: Partial<T> }) => any;
+      infoIconCompute?: (ctx: {
+        value: any;
+        values: Partial<T>;
+      }) => InfoIconComputedResult;
+    }
+  >;
   enabledModules?: readonly EnabledModule[];
 };
-
-// --- math helpers ---
-const gcd = (a: number, b: number): number => (b === 0 ? Math.abs(a) : gcd(b, a % b));
-const lcm2 = (a: number, b: number): number => (a === 0 || b === 0 ? 0 : Math.abs(a * b) / gcd(a, b));
-const lcmArray = (nums: number[]): number => nums.reduce((acc, n) => lcm2(acc, n), 1);
-
-// --- core: normalize rows to a common grid ---
-export function normalizeRows<T>(rows: RowConfig<T>[]): RowConfig<T>[] {
-  const numericCols = rows
-    .map(r => (Number.isFinite(r.cols) ? (r.cols as number) : 1))
-    .filter(n => n > 0);
-
-  if (numericCols.length === 0) return rows.slice();
-
-  const common = lcmArray(numericCols); // e.g. for [3,2,3,...] => 6
-
-  return rows.map(r => {
-    const cols = Number.isFinite(r.cols) ? (r.cols as number) : 1;
-    const factor = common / cols;
-
-    if (!Number.isFinite(factor) || factor <= 0) return { ...r };
-
-    return {
-      ...r,
-      cols: cols * factor,        
-      colWidth: (r.colWidth ?? 1) * factor,     
-    };
-  });
-}
 
 export function TaskBuilder<T>({
   schema,
@@ -59,26 +123,42 @@ export function TaskBuilder<T>({
   disabled,
   registry,
   meta,
-  enabledModules, // sensible default; adjust to your app
+  enabledModules,
 }: Props<T>) {
   const reg = registry ?? defaultRegistry<T>();
+  const shape = (schema as z.ZodObject<z.ZodRawShape>).shape;
 
-  // composed schema is ZodObject (composeSchema uses merge)
-  const shape = (schema as z.ZodObject<any>).shape;
-
-  // Compose meta once (prefer explicit meta prop over composing from modules)
   const metaMap = React.useMemo(
-    () => meta ?? composeMeta(enabledModules as EnabledModule[]),
+    () =>
+      (meta ?? composeMeta(enabledModules as EnabledModule[])) as Record<
+        string,
+        FieldMeta & {
+          computeValue?: (ctx: { values: Partial<T> }) => any;
+          infoIconCompute?: (ctx: {
+            value: any;
+            values: Partial<T>;
+          }) => InfoIconComputedResult;
+        }
+      >,
     [meta, enabledModules]
   );
 
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [minWidth, setMinWidth] = React.useState<string>();
+
+  React.useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (el) {
+      const width = el.scrollWidth;
+      setMinWidth(`${width}px`);
+    }
+  }, [layout, values]);
+
   const set = <K extends keyof T>(key: K, val: T[K] | undefined) =>
     onChange({ [key]: val } as Partial<T>);
-
   const get = <K extends keyof T>(key: K) => values[key];
   const getError = (key: keyof T) => errors?.[key];
 
-  // Skip entire sections that have no enabled fields in the schema
   function sectionHasAnyVisibleField(
     sec: LayoutConfig<T>["sections"][number]
   ): boolean {
@@ -87,77 +167,111 @@ export function TaskBuilder<T>({
     );
   }
 
-
-
   return (
-    <div>
+    <div
+      ref={containerRef}
+      style={minWidth ? { minWidth } : undefined}
+      className="tw:w-fit tw:max-w-full"
+    >
       {layout.sections.map((sec) => {
         if (!sectionHasAnyVisibleField(sec)) return null;
         if (sec.visibleIf && !sec.visibleIf({ values })) return null;
-
-        const normalizedRows = normalizeRows<T>(sec.rows);
-        normalizedRows.map(x=>x.cols)
-
-        const maxCols =  normalizedRows.map(x=>x.cols)[0] || 1;
-
-        const childrenClassName = `tw:grid tw:grid-cols-${maxCols}`;
+        const childrenClassName = "tw:flex tw:flex-row tw:flex-wrap";
         return (
           <CollapsibleSection
             key={sec.id}
-            title={sec.title}
+            title={sec.title ?? ""}
+            collapsible={sec.collapsible}
             defaultOpen={sec.defaultOpen ?? true}
-            className="tw:border-b-gray-200 tw:border-b-2"
+            className={`tw:border-b-gray-200 ${sec.collapsible ? "tw:border-b-2" : ""
+              }`}
             childrenClassName={childrenClassName}
           >
-            {normalizedRows.map((row, ri) => {
+            {sec.rows.map((row, ri) => {
               if (row.visibleIf && !row.visibleIf({ values })) return null;
-              const space = row.colWidth ?? 1;
-              const grid = `tw:col-span-${space}`;
-
+              const grid = "tw:flex tw:flex-col tw:flex-auto";
               return (
                 <div key={ri} className={grid}>
                   {row.fields.map((f) => {
                     const key = f.key as string;
                     const s = shape[key];
-                    if (!s) return null; // field not in schema → skip
+                    if (!s) return null;
 
-                    // Pull meta from composed map, then let overrides win
-                    const mm = metaMap[key] ?? ({} as FieldMeta);
-                    const label = f.override?.label ?? mm.label ?? key;
-                    const icon = f.override?.icon ?? mm.icon; // string token | string | IconType; registry resolves
+                    const mm =
+                      metaMap[key] ??
+                      ({
+                        label: key,
+                      } as FieldMeta & {
+                        compute?: (ctx: { values: Partial<T> }) => any;
+                        infoIconCompute?: (ctx: {
+                          value: any;
+                          values: Partial<T>;
+                        }) => InfoIconComputedResult;
+                      });
+
+                    const className = sec.className;
+                    console.log(className);
+                    const label = f.override?.label ?? mm.label ?? undefined;
+                    const icon = f.override?.icon ?? mm.icon;
                     const kind = f.override?.kind ?? mm.kind ?? "text";
                     const options = f.override?.options ?? mm.options;
+                    //Default size 18 idk?
+                    const iconSize = mm.iconSize ?? 18;
+                    const optionsLoader = mm.loadOptions;
                     const placeholder =
                       f.override?.placeholder ?? mm.placeholder;
 
-                    // Pick renderer by field or by kind
                     const renderer =
                       reg.byField?.[f.key] ??
                       (kind
                         ? (reg.byKind as Record<string, any>)[kind]
                         : undefined);
-
                     if (!renderer) return null;
 
-                    // Computed fields become read-only (no onChange)
-                    const value =
-                      f.compute?.({ values }) ?? (get(f.key) as any);
+                    // value (using meta-level compute)
+                    const computeFn = mm.computeValue;
+                    const isComputed = typeof computeFn === "function";
+
+                    const value = isComputed
+                      ? (computeFn!({ values }) as any)
+                      : (get(f.key) as any);
+
+                    const isReadOnly =
+                      f.override?.readOnly ||
+                      mm.readOnly ||
+                      isComputed ||
+                      kind === "calculated";
+
+                    const computedInfoIconObj =
+                      mm.infoIconCompute?.({ value, values }) ?? undefined;
+
+                    const unifiedInfoIcon = computedInfoIconObj ?? {
+                      icon: mm.infoIcon,
+                      className: undefined,
+                      title: undefined,
+                    };
 
                     return (
                       <React.Fragment key={String(f.key)}>
-                        {renderer({
-                          keyName: f.key,
-                          label,
-                          icon,
-                          value,
-                          onChange: (v: any) =>
-                            f.compute ? undefined : set(f.key, v),
-                          disabled:
-                            disabled || f.override?.readOnly || !!f.compute,
-                          error: getError(f.key),
-                          placeholder,
-                          options,
-                        })}
+                        <FieldRenderer
+                          renderer={renderer as Renderer<T>}
+                          keyName={f.key as keyof T}
+                          label={label}
+                          icon={icon}
+                          iconSize={iconSize}
+                          infoIconComputed={unifiedInfoIcon}
+                          value={value}
+                          onChange={(v: any) => {
+                            if (isComputed) return;
+                            set(f.key, v);
+                          }}
+                          disabled={disabled || isReadOnly}
+                          error={getError(f.key)}
+                          placeholder={placeholder}
+                          options={options}
+                          optionsLoader={optionsLoader}
+                          className={className}
+                        />
                       </React.Fragment>
                     );
                   })}

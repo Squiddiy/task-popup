@@ -1,7 +1,7 @@
 import React from "react";
 import * as FaIcons from "react-icons/fa6";
 import * as MdIcons from "react-icons/md";
-const ICONS: Record<string, React.ComponentType<{ size?: number, style?: any }>> = { ...FaIcons, ...MdIcons, };
+const ICONS: Record<string, React.ComponentType<{ size?: number; style?: React.CSSProperties }>> = { ...FaIcons, ...MdIcons };
 
 export type PathItem = {
     name: string;

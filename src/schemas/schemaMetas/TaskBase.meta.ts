@@ -2,25 +2,36 @@
 import { defineMeta } from "./meta";
 import { ICON } from "./IconResolver";
 import { TaskBaseSchema } from "../../schemas/TaskBase"; // your pure zod schema
+import { TASKSTATUS } from "../../schemas/TaskBase";
+import { getUserNamesAsStringList } from "../../services/api/apiService";
 
 export const TaskBaseMeta = defineMeta(TaskBaseSchema, {
   taskName: {
-    label: "Name",
-    icon: ICON.title,
+    icon: ICON.description,
+    iconSize: 40,
     kind: "text",
     placeholder: "Enter task name…",
   },
-  taskManager: { label: "Owner", icon: ICON.owner, kind: "text", placeholder: "Enter owner…" },
+  taskManager: {
+    label: "Owner",
+    icon: ICON.owner,
+    kind: "select",
+    placeholder: "Enter owner…",
+    loadOptions: async () => {
+      const managers = await getUserNamesAsStringList();
+      return managers;
+    }
+  },
   taskStatus: {
     label: "Status",
     icon: ICON.status,
     kind: "select",
-    options: ["Not Started", "Active", "Blocked", "Done"],
+    options: TASKSTATUS,
   },
   priority: {
     label: "Priority",
     icon: ICON.priority,
-    kind: "select",
+    kind: "number",
     options: ["Low", "Medium", "High"],
   },
   description: {

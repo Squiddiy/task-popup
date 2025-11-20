@@ -4,37 +4,33 @@ import { type AllInputs } from "../../composer/TaskCompose";
 export const multiColumnLayout: LayoutConfig<AllInputs> = {
   sections: [
     {
+      id: "top",
+      collapsible: false,
+      className: "tw:text-2xl tw:font-bold tw:text-gray-900",
+      rows: [{ fields: [{ key: "taskName" }] }],
+    },
+    {
       id: "main",
       title: "Main",
       collapsible: true,
       defaultOpen: true,
       rows: [
         {
-          cols: 3,
-          colWidth: 1,
           fields: [
-            { key: "taskName" },
             { key: "taskManager" },
             { key: "taskStatus" },
             { key: "priority" },
           ],
         },
-        { cols: 3, colWidth: 1, fields: [{ key: "probability" }] },
+
         {
-          cols: 3,
-          colWidth: 1,
           fields: [
-            { key: "area" },
-            { key: "seclevel" },
+            { key: "impact" },
+            { key: "probability" },
+            { key: "riskValue" },
             { key: "testSwitchNumber" },
           ],
         },
-
-        { cols: 3, colWidth: 2, fields: [{ key: "rootCause" }] },
-        { cols: 3, colWidth: 1, fields: [{ key: "consequence" }] },
-
-        { cols: 2, colWidth: 1, fields: [{ key: "impact" }] },
-        { cols: 2, colWidth: 1, fields: [{ key: "probability" }] },
       ],
     },
     {
@@ -44,9 +40,29 @@ export const multiColumnLayout: LayoutConfig<AllInputs> = {
       defaultOpen: true,
       rows: [
         {
-          cols: 1,
-          colWidth: 1,
-          fields: [{ key: "description", override: { kind: "richtext" } }],
+          fields: [{ key: "description" }],
+        },
+      ],
+    },
+    {
+      id: "measure",
+      title: "Measure",
+      collapsible: true,
+      defaultOpen: true,
+      rows: [
+        {
+          fields: [{ key: "rootCause" }],
+        },
+      ],
+    },
+    {
+      id: "consequence",
+      title: "consequence",
+      collapsible: true,
+      defaultOpen: true,
+      rows: [
+        {
+          fields: [{ key: "consequence" }],
         },
       ],
     },
@@ -55,13 +71,7 @@ export const multiColumnLayout: LayoutConfig<AllInputs> = {
       title: "Categories",
       collapsible: true,
       defaultOpen: true,
-      rows: [
-        {
-          cols: 1,
-          colWidth: 1,
-          fields: [{ key: "area" }, { key: "seclevel" }],
-        },
-      ],
+      rows: [{ fields: [{ key: "area" }, { key: "seclevel" }] }],
     },
   ],
 };
