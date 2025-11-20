@@ -193,7 +193,7 @@ function NumberInput({
   console.log(InfoIcon);
 
   return (
-    <div className={`tw:flex tw:flex-wrap tw:items-center tw:gap-1 ${InfoIcon ? "tw:-ml-6" : ""}`}>
+    <div className={`tw:flex tw:flex-wrap tw:items-center tw:gap-1 ${InfoIcon ? "tw:-ml-5.5" : ""}`}>
       {InfoIcon && (
         <InfoIcon
           size={18}
