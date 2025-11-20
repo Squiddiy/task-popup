@@ -34,7 +34,7 @@ export type FieldMeta = {
   }) => InfoIconComputedResult | undefined;
 };
 
-export type MetaForSchema<S extends z.ZodTypeAny> = {
+export type MetaForSchema<S extends z.ZodType> = {
   [K in keyof z.input<S>]?: FieldMeta & {
     computeValue?: (ctx: { values: Partial<z.input<S>> }) => z.input<S>[K];
 
@@ -46,7 +46,7 @@ export type MetaForSchema<S extends z.ZodTypeAny> = {
   };
 };
 
-export function defineMeta<S extends z.ZodTypeAny>(
+export function defineMeta<S extends z.ZodType>(
   _schema: S,
   meta: MetaForSchema<S>
 ): MetaForSchema<S> {
