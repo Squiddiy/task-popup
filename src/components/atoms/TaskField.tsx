@@ -141,7 +141,7 @@ function LabelBlock({
 
 function ReadOnlyText({ value }: { value: React.ReactNode }) {
   return (
-    <span className="tw:min-w-[8rem] tw:flex-1 tw:text-gray-400">{value}</span>
+    <span className="tw:min-w-32 tw:flex-1 tw:text-gray-400">{value}</span>
   );
 }
 
