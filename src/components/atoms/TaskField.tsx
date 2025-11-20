@@ -96,21 +96,13 @@ function LabelBlock({
   id,
   icon: Icon,
   iconSize,
-  infoIconComputed,
   label,
 }: {
   id?: string;
   icon?: IconType;
   iconSize: number;
-  infoIconComputed?: {
-    icon?: IconType;
-    className?: string;
-    title?: string;
-  };
   label: string;
 }) {
-  const InfoIcon = infoIconComputed?.icon; // Capitalize for JSX
-
   return (
     <label
       htmlFor={id}
@@ -127,13 +119,6 @@ function LabelBlock({
         >
           {label}
         </span>
-      )}
-      {InfoIcon && (
-        <InfoIcon
-          size={18}
-          className={infoIconComputed?.className}
-          title={infoIconComputed?.title}
-        />
       )}
     </label>
   );
@@ -189,6 +174,7 @@ function NumberInput({
   placeholder,
   disabled,
   className,
+  infoIconComputed,
 }: Pick<
   NumberProps,
   | "id"
@@ -200,23 +186,38 @@ function NumberInput({
   | "placeholder"
   | "disabled"
   | "className"
+  | "infoIconComputed"
 >) {
+  const InfoIcon = infoIconComputed?.icon; // Capitalize for JSX
+
+  console.log(InfoIcon);
+
   return (
-    <input
-      id={id}
-      type="number"
-      value={value ?? ""}
-      onChange={(e) => {
-        const raw = e.target.value;
-        onChange(raw === "" ? "" : Number(raw));
-      }}
-      min={min}
-      max={max}
-      step={step}
-      placeholder={placeholder}
-      disabled={disabled}
-      className={fieldInputClasses + " " + className}
-    />
+    <div className={`tw:flex tw:flex-wrap tw:items-center tw:gap-1 ${InfoIcon ? "tw:-ml-6" : ""}`}>
+      {InfoIcon && (
+        <InfoIcon
+          size={18}
+          className={infoIconComputed?.className}
+          title={infoIconComputed?.title}
+        />
+      )}
+
+      <input
+        id={id}
+        type="number"
+        value={value ?? ""}
+        onChange={(e) => {
+          const raw = e.target.value;
+          onChange(raw === "" ? "" : Number(raw));
+        }}
+        min={min}
+        max={max}
+        step={step}
+        placeholder={placeholder}
+        disabled={disabled}
+        className={fieldInputClasses + " " + className}
+      />
+    </div>
   );
 }
 
@@ -324,7 +325,6 @@ export default function TaskField(props: Props) {
           id={id}
           icon={icon}
           iconSize={iconSize}
-          infoIconComputed={infoIconComputed}
           label={label ?? ""}
         />
 
@@ -354,25 +354,20 @@ export default function TaskField(props: Props) {
             />
           )
         ) : props.type === "number" ? (
-          readOnly ? (
-            <ReadOnlyText value={props.value ?? ""} />
-          ) : (
-            <NumberInput
-              id={id}
-              value={props.value ?? ""}
-              onChange={props.onChange}
-              min={props.min}
-              max={props.max}
-              step={props.step}
-              placeholder={props.placeholder}
-              disabled={disabled}
-              className={className}
-            />
-          )
-        ) : // type === "text"
-        readOnly ? (
-          <ReadOnlyText value={props.value ?? ""} />
+          <NumberInput
+            id={id}
+            value={props.value ?? ""}
+            onChange={props.onChange}
+            min={props.min}
+            max={props.max}
+            step={props.step}
+            placeholder={props.placeholder}
+            disabled={disabled}
+            className={className}
+            infoIconComputed={infoIconComputed}
+          />
         ) : (
+          // type === "text"
           <TextInput
             id={id}
             value={props.value ?? ""}
